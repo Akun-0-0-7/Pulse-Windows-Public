@@ -9,7 +9,7 @@ using System.Windows.Threading;
 using Pulse.Core;
 using Pulse.Desktop;
 
-internal static class Program
+internal static partial class Program
 {
     [STAThread]
     private static int Main(string[] args)
@@ -37,6 +37,7 @@ internal static class Program
         var data=Path.Combine(output,"synthetic-data");Environment.SetEnvironmentVariable("PULSE_DATA_DIR",data);var storage=new AppStorage(data);var account=new AccountConfig{Id="primary-demo",ProviderId="codex",Enabled=true,Detailed=true};storage.SaveConfig(new AppConfig{Accounts=[account]});
         storage.SaveCache([new(){AccountId=account.Id,ProviderId="codex",Plan="cached-plan",ObservedAt=DateTimeOffset.UtcNow,ErrorCode="unreachable",ErrorMessage="cached-connection-error"}]);
         var app=new PulseApp();account=app.Engine.Config.Accounts[0];
+        if(args.Contains("--motion-only")){RailMotionMathChecks.Run();MotionChecks(app,output,args.Contains("--render"));return 0;}
         var windowStarterTimer=Field<DispatcherTimer>(app,"windowStarterTimer");
         Equal(1,windowStarterTimer.Interval.TotalSeconds,"Independent window starter interval");
         if(windowStarterTimer.IsEnabled)throw new Exception("Window starter timer started during synthetic app construction.");
@@ -72,6 +73,8 @@ internal static class Program
             foreach(var entry in starterEnvironment)Environment.SetEnvironmentVariable(entry.Key,entry.Value);
         }
         AutoCollapseChecks(app);
+        RailMotionMathChecks.Run();
+        MotionChecks(app,output,args.Contains("--render"));
         var now=DateTimeOffset.UtcNow;var history=Enumerable.Range(0,6).Select(i=>new MetricPoint(now.AddHours(i-6),i%3)).ToList();
         var reading=new UsageReading{AccountId=account.Id,ObservedAt=now,Metrics=[new("one","扩展趋势一",2,"次",history),new("two","扩展趋势二",2,"次",history),new("three","扩展趋势三",2,"次",history)]};
         var content=new StackPanel{Width=310,Background=Ui.Bg};content.Children.Add(UsageBar.Create(52.5,true));DetailCharts.AddHistory(content,app,account,reading);
@@ -436,7 +439,7 @@ internal static class Program
     }
     private static void RunFor(int milliseconds)
     {
-        var frame=new DispatcherFrame();var stop=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(milliseconds)};
+        var frame=new DispatcherFrame();var stop=new DispatcherTimer(DispatcherPriority.Send){Interval=TimeSpan.FromMilliseconds(milliseconds)};
         stop.Tick+=(_,_)=>{stop.Stop();frame.Continue=false;};stop.Start();Dispatcher.PushFrame(frame);
     }
     private static System.Collections.Generic.IEnumerable<DependencyObject> Descendants(DependencyObject root)
