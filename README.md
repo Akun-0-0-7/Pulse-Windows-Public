@@ -1,5 +1,7 @@
 # Pulse Windows
 
+<img src="src/Pulse.Desktop/Assets/Pulse.png" alt="Pulse 应用图标" width="96" height="96">
+
 在 Windows 桌面浮动栏和系统托盘查看 AI 服务额度。基于 [qunqin24/Pulse](https://github.com/qunqin24/Pulse) 移植，支持 Windows 11、Windows 10 企业版长期服务版（LTSC）21H2 的 64 位 Intel/AMD 电脑。
 
 当前公开版本：**0.1.5**。
