@@ -17,7 +17,8 @@
 | `Scripts/install.ps1` | 安装到当前用户应用目录，创建开始菜单快捷方式。 |
 | `Scripts/uninstall.ps1` | 移除本程序安装及所属快捷方式、启动项和协议；保留个人数据。 |
 | `Scripts/安装到当前用户.cmd` | 双击启动同目录安装脚本。 |
-| `Docs/five-hour-reset.zh-CN.md` | 0.1.4 的五小时重置选项、执行边界、状态文件和结果文件说明。 |
+| `updates.json` | 公开运行包的版本、下载地址和完整性摘要，供应用内检查更新读取。 |
+| `Docs/five-hour-reset.zh-CN.md` | 0.1.5 的五小时重置选项、执行边界、状态文件和结果文件说明。 |
 | `LICENSE`、`THIRD_PARTY_NOTICES.md`、`Licenses/*` | 主许可证、改写来源与随包组件授权。 |
 
 ## 公共逻辑：`src/Pulse.Core/`
