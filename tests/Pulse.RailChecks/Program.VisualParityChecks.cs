@@ -11,7 +11,7 @@ using Pulse.Desktop;
 
 internal static partial class Program
 {
-    private static void VisualParityChecks(PulseApp app,string output)
+    private static void VisualParityChecks(PulseApp app,string output,bool capturePixels=true)
     {
         var config=app.Engine.Config;var saved=System.Text.Json.JsonSerializer.Serialize(config,StorageJson.Options);
         var readings=Field<ConcurrentDictionary<string,UsageReading>>(app.Engine,"readings");var priorReadings=readings.ToArray();
@@ -38,15 +38,17 @@ internal static partial class Program
             Invoke(rail,"RefreshDetail",true);bubble=Field<object>(rail,"detailBubble");
             Equal(anchor,(double)bubble.GetType().GetProperty("Anchor")!.GetValue(bubble)!,"Same-size refresh must preserve the pointer anchor");RunFor(60);
             var folder=Path.Combine(output,"visual-parity");Directory.CreateDirectory(folder);
-            CaptureDpi((FrameworkElement)rail.Content,Path.Combine(folder,"top-rail.png"));CaptureDpi((FrameworkElement)popup.Content,Path.Combine(folder,"codex-card.png"));
-            using(var image=File.OpenRead(Path.Combine(folder,"top-rail.png")))
+            if(capturePixels)
             {
+                CaptureDpi((FrameworkElement)rail.Content,Path.Combine(folder,"top-rail.png"));CaptureDpi((FrameworkElement)popup.Content,Path.Combine(folder,"codex-card.png"));
+                using var image=File.OpenRead(Path.Combine(folder,"top-rail.png"));
                 var frame=new PngBitmapDecoder(image,BitmapCreateOptions.None,BitmapCacheOption.OnLoad).Frames[0];
                 var pixels=new byte[frame.PixelWidth*frame.PixelHeight*4];frame.CopyPixels(pixels,frame.PixelWidth*4,0);
                 var firstRed=int.MaxValue;
                 for(var y=0;y<frame.PixelHeight;y++)for(var x=0;x<frame.PixelWidth;x++){var index=(y*frame.PixelWidth+x)*4;if(pixels[index+2]>150&&pixels[index+1]<80&&pixels[index]<100&&pixels[index+3]>150)firstRed=Math.Min(firstRed,y);}
                 if(firstRed>18)throw new Exception("The source's outward ring stroke was clipped by the scroll viewport.");
             }
+            else Console.WriteLine("SKIP: native pixel captures explicitly disabled for a session without WPF raster output.");
             foreach(var (edge,side) in new[]{("left","left"),("right","right"),("bottom","bottom")})
             {
                 config.DockEdge=edge;rail.ApplySettings();SetMouseOver(rail,true);RunFor(80);

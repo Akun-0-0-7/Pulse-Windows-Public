@@ -18,7 +18,7 @@ public static class WindowResetTests
         AccountId = account.Id, ProviderId = account.ProviderId, ObservedAt = observed, Windows = [.. windows]
     };
 
-    private static UsageWindow FiveHour(DateTimeOffset at) => new() { Id = "primary", Kind = "fiveHour", ResetsAt = at };
+    private static UsageWindow FiveHour(DateTimeOffset at) => new() { Id = "primary", Kind = "fiveHour", UsedPercent = 20, ResetsAt = at };
 
     [Check] public static void ExactResetClaimsOnlyOnceAndSurvivesJsonReload()
     {
@@ -195,8 +195,8 @@ public static class WindowResetTests
         var next = Reset.AddHours(5);
         var coordinator = new WindowResetCoordinator();
         var reading = Reading(account, now,
-            new UsageWindow { Id = "expired-group", Kind = "fiveHour", ResetsAt = Reset },
-            new UsageWindow { Id = "future-group", Kind = "fiveHour", ResetsAt = next });
+            new UsageWindow { Id = "expired-group", Kind = "fiveHour", UsedPercent = 20, ResetsAt = Reset },
+            new UsageWindow { Id = "future-group", Kind = "fiveHour", UsedPercent = 20, ResetsAt = next });
         Assert.True(coordinator.Claim(account, reading, now, 0, 0) is null);
         Assert.Equal(1, coordinator.State.Accounts[account.Id].PlannedResets.Count);
         Assert.Equal(next, coordinator.State.Accounts[account.Id].PlannedResets[0]);
