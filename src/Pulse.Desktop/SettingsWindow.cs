@@ -6,6 +6,7 @@ public sealed partial class SettingsWindow : Window
     public string CurrentPage=>current;
     private Border? accountReading;
     private TextBlock? windowStarterStatus;
+    private Button? windowStarterRetryButton;
     private TextBlock? shortcutStatus;
     private readonly DispatcherTimer statusRefresh=new(){Interval=TimeSpan.FromMinutes(5)};
     public SettingsWindow(PulseApp app)
@@ -28,7 +29,7 @@ public sealed partial class SettingsWindow : Window
     }
     public void Navigate(string id)
     {
-        if(!navigating&&id!=current){back.Push(current);forward.Clear();}current=id;accountReading=null;windowStarterStatus=null;page.Children.Clear();BuildSidebar();
+        if(!navigating&&id!=current){back.Push(current);forward.Clear();}current=id;accountReading=null;windowStarterStatus=null;windowStarterRetryButton=null;page.Children.Clear();BuildSidebar();
         if(id.StartsWith("account:")){AccountPage(id[8..]);return;}
         switch(id){case "onboarding":Onboarding();break;case "dashboard":Dashboard();break;case "accounts":Accounts();break;case "appearance":Appearance();break;case "position":Position();break;case "general":General();break;case "notifications":Notifications();break;case "network":Network();break;case "spend":Spend();break;case "reports":Reports();break;case "status":Status();break;case "diagnostics":Diagnostics();break;case "extensions":Extensions();break;case "integrations":Integrations();break;default:About();break;}UpdateStatus();
     }
@@ -39,7 +40,7 @@ public sealed partial class SettingsWindow : Window
     {
         UpdateStatus();
         if(current=="dashboard"&&!app.Engine.IsRefreshing){page.Children.Clear();Dashboard();}
-        else if(accountReading is not null&&current.StartsWith("account:")&&app.Engine.Config.Accounts.FirstOrDefault(a=>a.Id==current[8..]) is {} account){accountReading.Child=RailWindow.DetailContent(app,account);if(windowStarterStatus is not null)windowStarterStatus.Text=app.WindowStarterStatus(account.Id);}
+        else if(accountReading is not null&&current.StartsWith("account:")&&app.Engine.Config.Accounts.FirstOrDefault(a=>a.Id==current[8..]) is {} account){accountReading.Child=RailWindow.DetailContent(app,account);if(windowStarterStatus is not null)windowStarterStatus.Text=app.WindowStarterStatus(account.Id);if(windowStarterRetryButton is not null)windowStarterRetryButton.IsEnabled=app.CanRetryWindowStarter(account.Id);}
     }
     public void RefreshPage()=>Navigate(current);
     public void UpdateShortcutStatus(){if(current=="general"&&shortcutStatus is not null)shortcutStatus.Text=string.Join(Environment.NewLine,app.Rail?.ShortcutErrors.Select(Localization.Translate)??[]);}
@@ -97,7 +98,11 @@ public sealed partial class SettingsWindow : Window
         if(account.ProviderId is "codex" or "claudeCode"&&app.UsesWindowStarterLogin(account)){
             page.Children.Add(Ui.Check("5 小时重置后发送一次 hi 并刷新额度",account.Extra.GetValueOrDefault("windowStarter")=="true",value=>{if(value&&MessageBox.Show("开启后，Pulse 会在 5 小时额度重置时通过本机工具发送一次 hi，并立即刷新额度。该请求会使用账号额度。是否启用？","窗口启动器",MessageBoxButton.YesNo)!=MessageBoxResult.Yes){Navigate(current);return;}account.Extra["windowStarter"]=value?"true":"false";app.Engine.Config.WindowStarterEnabled=app.Engine.Config.Accounts.Any(a=>a.Extra.GetValueOrDefault("windowStarter")=="true");app.Save();}));
             page.Children.Add(Ui.Label("仅处理 5 小时额度；每周重置不另发消息。",12,Ui.Muted));
+            page.Children.Add(Ui.Label("每分钟检查额度；明确的网络或额度错误会自动补发。剩余恢复 100% 时仅发送一次。",12,Ui.Muted));
             windowStarterStatus=Ui.Label(app.WindowStarterStatus(id),12,Ui.Muted);page.Children.Add(windowStarterStatus);
+            windowStarterRetryButton=Ui.Button("再次发送 hi 并刷新额度",()=>_=app.RetryWindowStarterAsync(id));
+            windowStarterRetryButton.IsEnabled=app.CanRetryWindowStarter(id);page.Children.Add(windowStarterRetryButton);
+            page.Children.Add(Ui.Label("超时或中断时，请先查看额度；手动重试可能重复已被服务商接收的请求。自动发送遵守允许时段，手动重试可随时进行。",12,Ui.Muted));
         }
         var reading=app.Engine.Reading(id);if(reading?.Windows.Count>0)AddSelect("圆环主额度",new[]{"automatic"}.Concat(reading.Windows.Select(w=>w.Id)),account.PrimaryWindowId??"automatic",text=>account.PrimaryWindowId=text=="automatic"?null:text);
         accountReading=Ui.Box(RailWindow.DetailContent(app,account));page.Children.Add(accountReading);

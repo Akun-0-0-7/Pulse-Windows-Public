@@ -45,12 +45,12 @@ internal static partial class Program
                 var edgeAfter=edge switch{"left"=>rect.Left,"right"=>rect.Right,"top"=>rect.Top,_=>rect.Bottom};
                 Equal(edgeBefore,edgeAfter,"Visible chrome dock anchor");
                 progress=MotionValue(rail,"railMotion");Invoke(rail,"SetRailCollapsed",false);
-                Equal(progress,MotionValue(rail,"railMotion"),"Reversal position continuity");
+                Equal(SystemParameters.ClientAreaAnimation?progress:1,MotionValue(rail,"railMotion"),"Reversal continuity or reduced-motion snap");
                 RunFor(650);Equal(1,MotionValue(rail,"railMotion"),"Rail spring settles open");
             }
             Invoke(rail,"SetRailCollapsed",true);RunFor(650);
             var ringHost=Field<ScrollViewer>(rail,"expandedHost");Equal(0,ringHost.Opacity,"Closed ring opacity");
-            Invoke(rail,"SetRailCollapsed",false);Equal(0,ringHost.Opacity,"Delayed ring fade must not flash at its base value");
+            Invoke(rail,"SetRailCollapsed",false);Equal(SystemParameters.ClientAreaAnimation?0:1,ringHost.Opacity,"Delayed fade or reduced-motion visibility");
             RunFor(650);
             foreach(var monitor in System.Windows.Forms.Screen.AllScreens)
             {

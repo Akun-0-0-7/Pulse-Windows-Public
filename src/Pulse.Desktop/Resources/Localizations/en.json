@@ -462,5 +462,18 @@
   "{0} 用量": "{0} usage",
   "每周限额": "Weekly limit",
   "{0} 重置": "Resets {0}",
-  "余额  {0}": "Balance  {0}"
+  "余额  {0}": "Balance  {0}",
+  "等待网络恢复和最新额度，恢复后自动补发。": "Waiting for the network and fresh quota data; sending will retry automatically after recovery.",
+  "额度不足，等待 5 小时及每周额度恢复后补发。": "Quota is unavailable. Waiting for both five-hour and weekly quota to recover before retrying.",
+  "等待自动补发，最早 {0}；每分钟检查额度。": "Waiting to retry automatically, no earlier than {0}; quota is checked every minute.",
+  "上次处理：发送超时，请先查看额度，可手动重试 · {0}": "Last run: sending timed out; check usage first, then retry manually if needed · {0}",
+  "上次处理：发送已中断，可手动重试 · {0}": "Last run: sending was interrupted; a manual retry is available · {0}",
+  "上次处理：未确认请求完成，请先查看额度，可手动重试 · {0}": "Last run: completion was not confirmed; check usage first, then retry manually if needed · {0}",
+  "未发送：请等待最新可用额度，或确认本轮是否已成功。 · {0}": "Not sent: wait for fresh available quota, or check whether this cycle already succeeded. · {0}",
+  "上次处理：工具模型配置不可用，请检查工具版本后重试 · {0}": "Last run: the tool's model configuration is unavailable; check the tool version before retrying · {0}",
+  "上次处理：发送失败，可手动重试 · {0}": "Last run: sending failed; a manual retry is available · {0}",
+  "每分钟检查额度；明确的网络或额度错误会自动补发。剩余恢复 100% 时仅发送一次。": "Quota is checked every minute. Explicit network or quota failures are retried automatically. One hi is sent when remaining quota returns to 100%.",
+  "再次发送 hi 并刷新额度": "Send hi again and refresh quota",
+  "超时或中断时，请先查看额度；手动重试可能重复已被服务商接收的请求。自动发送遵守允许时段，手动重试可随时进行。": "After a timeout or interruption, check usage first; a manual retry may duplicate a request already received by the provider. Automatic sending follows the allowed hours; manual retries are available at any time.",
+  "上次发送结果未确认，请先查看额度，可手动重试。": "The previous send result was not confirmed. Check usage first, then retry manually if needed."
 }

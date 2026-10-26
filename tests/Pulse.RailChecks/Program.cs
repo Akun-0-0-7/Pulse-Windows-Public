@@ -37,6 +37,7 @@ internal static partial class Program
         var data=Path.Combine(output,"synthetic-data");Environment.SetEnvironmentVariable("PULSE_DATA_DIR",data);var storage=new AppStorage(data);var account=new AccountConfig{Id="primary-demo",ProviderId="codex",Enabled=true,Detailed=true};storage.SaveConfig(new AppConfig{Accounts=[account]});
         storage.SaveCache([new(){AccountId=account.Id,ProviderId="codex",Plan="cached-plan",ObservedAt=DateTimeOffset.UtcNow,ErrorCode="unreachable",ErrorMessage="cached-connection-error"}]);
         var app=new PulseApp();account=app.Engine.Config.Accounts[0];
+        if(args.Contains("--starter-only")){WindowStarterRecoveryChecks(app);app.Shutdown();return 0;}
         if(args.Contains("--visual-only")){PulseShapeChecks.Run();VisualParityChecks(app,output);return 0;}
         if(args.Contains("--motion-only")){RailMotionMathChecks.Run();MotionChecks(app,output,args.Contains("--render"));return 0;}
         var windowStarterTimer=Field<DispatcherTimer>(app,"windowStarterTimer");
@@ -66,6 +67,7 @@ internal static partial class Program
             WindowStarterClaimChecks(app,account);
             CorruptWindowStarterHistoryChecks(app,account);
             WindowStarterReceiptMetadataChecks(app,account);
+            WindowStarterRecoveryChecks(app);
             ShowSettingsRefreshChecks(app,account,extra);
         }
         finally
@@ -77,7 +79,7 @@ internal static partial class Program
         RailMotionMathChecks.Run();
         MotionChecks(app,output,args.Contains("--render"));
         PulseShapeChecks.Run();
-        VisualParityChecks(app,output);
+        VisualParityChecks(app,output,!args.Contains("--skip-raster"));
         var now=DateTimeOffset.UtcNow;var history=Enumerable.Range(0,6).Select(i=>new MetricPoint(now.AddHours(i-6),i%3)).ToList();
         var reading=new UsageReading{AccountId=account.Id,ObservedAt=now,Metrics=[new("one","扩展趋势一",2,"次",history),new("two","扩展趋势二",2,"次",history),new("three","扩展趋势三",2,"次",history)]};
         var content=new StackPanel{Width=310,Background=Ui.Bg};content.Children.Add(UsageBar.Create(52.5,true));DetailCharts.AddHistory(content,app,account,reading);
@@ -208,7 +210,7 @@ internal static partial class Program
 
             var now=DateTimeOffset.UtcNow;
             var reset=now.AddMinutes(1);
-            var reading=new UsageReading{AccountId=account.Id,ProviderId="codex",ObservedAt=now,Windows=[new UsageWindow{Id="five-hour-fixture",Kind="fiveHour",ResetsAt=reset}]};
+            var reading=new UsageReading{AccountId=account.Id,ProviderId="codex",ObservedAt=now,Windows=[new UsageWindow{Id="five-hour-fixture",Kind="fiveHour",UsedPercent=20,ResetsAt=reset}]};
             if(ClaimWindowReset(app,account,reading,now) is not null)throw new Exception("Future five-hour reset was claimed before it was due.");
             if(!File.Exists(statePath))throw new Exception("Future five-hour reset plan was not saved.");
             File.Move(statePath,backup);
