@@ -458,5 +458,9 @@
   "Windows 移植版本 0.1.5 · 基于 Pulse 1.12.2": "Windows port version 0.1.5 · Based on Pulse 1.12.2",
   "上次处理：网络连接失败，请检查代理 · {0}": "Last run: network connection failed; check the proxy · {0}",
   "上次处理：登录已失效，请重新登录 · {0}": "Last run: sign-in expired; sign in again · {0}",
-  "上次处理：Codex 未确认请求完成，本轮不重复发送 · {0}": "Last run: Codex did not confirm completion; no repeat this cycle · {0}"
+  "上次处理：Codex 未确认请求完成，本轮不重复发送 · {0}": "Last run: Codex did not confirm completion; no repeat this cycle · {0}",
+  "{0} 用量": "{0} usage",
+  "每周限额": "Weekly limit",
+  "{0} 重置": "Resets {0}",
+  "余额  {0}": "Balance  {0}"
 }

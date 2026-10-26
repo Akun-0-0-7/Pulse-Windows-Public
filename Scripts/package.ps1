@@ -31,6 +31,7 @@ try {
     Copy-Item -LiteralPath (Join-Path $taskWebView 'LICENSE.txt') -Destination (Join-Path $taskThirdParty 'WebView2-LICENSE.txt')
     Copy-Item -LiteralPath (Join-Path $taskWebView 'NOTICE.txt') -Destination (Join-Path $taskThirdParty 'WebView2-NOTICE.txt')
     Copy-Item -LiteralPath (Join-Path $taskRoot 'Licenses\ZstdSharp-MIT.txt') -Destination $taskThirdParty
+    Copy-Item -LiteralPath (Join-Path $taskRoot 'Licenses\Lobe-Icons-MIT.txt') -Destination $taskThirdParty
     $taskAssets = Get-Content -LiteralPath (Join-Path $taskRoot 'src\Pulse.Desktop\obj\project.assets.json') -Raw -Encoding UTF8 | ConvertFrom-Json
     $taskRuntimeConfig = Get-Content -LiteralPath (Join-Path $taskOutput 'Pulse.runtimeconfig.json') -Raw -Encoding UTF8 | ConvertFrom-Json
     $taskFrameworks = @($taskRuntimeConfig.runtimeOptions.includedFrameworks)

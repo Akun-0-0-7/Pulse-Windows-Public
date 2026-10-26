@@ -64,23 +64,7 @@ public sealed partial class RailWindow : Window
     private void ShowDetail(AccountConfig account,FrameworkElement tile)=>OpenDetail(account,tile);
     private void RefreshDetail(bool force=false)=>UpdateDetailContent(force);
     private void PositionDetail()=>PlaceDetail();
-    public static StackPanel DetailContent(PulseApp app,AccountConfig account)
-    {
-        var panel=new StackPanel {Width=310};panel.Children.Add(Ui.Label(app.AccountName(account.Id),19));
-        if(!account.Enabled){panel.Children.Add(Ui.Label("账号未启用。勾选“启用这个账号”后读取额度。",13,Ui.Muted));panel.Children.Add(Ui.Button("账号设置",()=>app.ShowSettings("account:"+account.Id)));return panel;}
-        var reading=app.Engine.Reading(account.Id);if(reading?.Plan is {} plan)panel.Children.Add(Ui.Label(plan,12,Ui.Muted));
-        if(reading is null)panel.Children.Add(Ui.Label("等待首次读取",13,Ui.Muted));else {
-            foreach(var window in reading.Windows){panel.Children.Add(Ui.Label($"{Ui.WindowName(window)}  ·  {UsageFigures.Percent(window.UsedPercent)}% 已用",13));panel.Children.Add(UsageBar.Create(window.UsedPercent,app.Engine.Config.SegmentedBars));panel.Children.Add(Ui.Label(Ui.ResetText(window.ResetsAt)+(window.Estimated?" · 按所选基准估算":""),11,Ui.Muted));}
-            if(reading.Balance is {} balance)panel.Children.Add(Ui.Label($"余额  {balance.Amount:0.####} {balance.Currency}",16));
-            if(reading.CreditBalance is {} credits)panel.Children.Add(Ui.Label("积分  "+credits));
-            if(app.Engine.Config.ForecastEnabled&&app.Engine.Forecast(account.Id) is {} forecast)panel.Children.Add(Ui.Label($"按最近消耗速度，约 {forecast.TotalHours:0.#} 小时后用尽",12,Ui.Brush("#FFBA83")));
-            foreach(var metric in reading.Metrics)panel.Children.Add(Ui.Label($"{metric.Label}  {metric.Value:0.##} {metric.Unit}"));
-            DetailCharts.AddHistory(panel,app,account,reading);
-            if(reading.ErrorMessage is {} error)panel.Children.Add(Ui.Label((reading.IsStale?"上次读数 · ":"")+error,12,Ui.Brush("#FFBA83")));
-            if(reading.ObservedAt is {} at)panel.Children.Add(Ui.Label($"读取于 {at.ToLocalTime():MM-dd HH:mm:ss} · {reading.Source}",11,Ui.Muted));
-        }
-        if(account.Detailed&&LocalUsageCard.Create(app,account) is {} local)panel.Children.Add(local);DetailCharts.AddCodex(panel,app,account);panel.Children.Add(Ui.Button("账号设置",()=>app.ShowSettings("account:"+account.Id)));return panel;
-    }
+    public static StackPanel DetailContent(PulseApp app,AccountConfig account)=>RailCard.Content(app,account);
     private void RememberPlacement()
     {
         var config=app.Engine.Config;config.PanelX=Left;config.PanelY=Top;var screen=System.Windows.Forms.Screen.FromHandle(new WindowInteropHelper(this).Handle);var scale=RailScreen.Scale(screen);var area=screen.WorkingArea;var rect=RailScreen.Bounds(this);
@@ -102,6 +86,7 @@ public sealed partial class RailWindow : Window
         if(config.PanelDisplay!=screen.DeviceName){config.PanelDisplay=screen.DeviceName;if(saved is not null)config.DockEdge=saved.Edge;app.Engine.Save();}
         UpdateRailGeometry(screen,false);UpdateLayout();
         var point=RailPlacement.Physical(new Rect(area.Left,area.Top,area.Width,area.Height),new Size(ActualWidth,ActualHeight),scale,config.DockEdge,saved is null?null:new Point(saved.X,saved.Y));
+        point=config.DockEdge switch{"top"=>new Point(point.X,point.Y-6*scale),"bottom"=>new Point(point.X,point.Y+6*scale),"left"=>new Point(point.X-6*scale,point.Y),"right"=>new Point(point.X+6*scale,point.Y),_=>point};
         RailScreen.Move(this,point);
     }
 }
@@ -111,20 +96,26 @@ public sealed class RingTile(AccountConfig account,UsageReading? reading,Provide
     {
         reading=value;definition=provider;fetching=refreshing;active=working;InvalidateVisual();
     }
-    protected override Size MeasureOverride(Size availableSize)=>new(config.RingSize+18,config.RingSize+28);
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        var s=RailCard.Scale(config);return new Size(38*s,(58+(config.ShowClock?15:0))*s);
+    }
     protected override void OnRender(DrawingContext drawing)
     {
-        var size=config.RingSize;var center=new Point((size+18)/2,size/2+1);var radius=size/2-4;var window=UsageEngine.Headline(account,reading);var percent=window?.UsedPercent;var brush=account.AccentColor is {} color?Ui.Brush(color):percent>=90?Ui.Brush("#FF786C"):percent>=75?Ui.Brush("#FFCA7A"):Ui.Brush(definition?.Color??"#B5ADFF");
-        drawing.DrawEllipse(null,new Pen(Ui.BorderBrush,3),center,radius,radius);
-        if(percent is {} value) Arc(drawing,center,radius,Math.Clamp((config.ShowRemaining?100-value:value)/100,.001,1),new Pen(brush,3){StartLineCap=PenLineCap.Round,EndLineCap=PenLineCap.Round});
-        if(config.ShowSecondaryRing&&reading?.Windows.Where(w=>w.Id!=window?.Id).OrderByDescending(w=>w.UsedPercent).FirstOrDefault() is {} second)Arc(drawing,center,radius-5,Math.Clamp(second.UsedPercent/100,.001,1),new Pen(Ui.Muted,1));
-        if(config.ShowClock&&window is {ReportsLength:true,ResetsAt:{} reset,WindowSeconds:>0}&&window.WindowSeconds is {} seconds)Arc(drawing,center,radius+4,Math.Clamp(1-(reset-DateTimeOffset.Now).TotalSeconds/seconds,.001,1),new Pen(Ui.Muted,1));
-        var initial=definition?.Name switch{"Codex"=>">_","Claude Code"=>"✳","DeepSeek"=>"D",_=>definition?.Name[..Math.Min(2,definition.Name.Length)]??"P"};
-        if(config.AnimatedMarks){var shape=int.TryParse(account.Extra.GetValueOrDefault("botBody"),out var body)?body:0;var personality=int.TryParse(account.Extra.GetValueOrDefault("botPersonality"),out var mood)?mood:0;BotRenderer.Draw(drawing,center,brush,window?.Exhausted==true?"spent":active?"working":fetching?"fetching":"quiet",Math.Clamp(shape,0,17),Math.Clamp(personality,0,7));}else Text(drawing,initial,new Point(center.X,center.Y-9),13,brush,true);
-        var label=percent is {} p?$"{UsageFigures.Percent(p,config.ShowRemaining)}%":reading?.Balance is {} money?$"{money.Amount:0.##}":fetching?"···":"—";
-        Text(drawing,label,new Point(center.X,size+4),12,reading?.IsStale==true?Ui.Muted:Ui.Text,true);
-        if(fetching||active){var angle=DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()/600d;drawing.DrawEllipse(Ui.Accent,null,new Point(center.X+radius*Math.Cos(angle),center.Y+radius*Math.Sin(angle)),2.5,2.5);}
+        var s=RailCard.Scale(config);var size=36*s;var inset=config.ShowClock?10*s:0;var center=new Point(19*s,inset+18*s);var radius=18*s;
+        var window=UsageEngine.Headline(account,reading);var percent=window?.UsedPercent;var white=RailCard.Foreground(config);
+        var brush=account.AccentColor is {} color?Ui.Brush(color):percent>=90?Ui.Brush("#EF1630"):percent>=75?Ui.Brush("#FFB339"):white;
+        drawing.DrawEllipse(null,new Pen(config.Theme=="light"?Ui.BorderBrush:Ui.Brush("#282828"),4*s),center,radius,radius);
+        if(percent is {} value&&UsageFigures.Percent(value,config.ShowRemaining)>0)Arc(drawing,center,radius,Math.Clamp((config.ShowRemaining?100-value:value)/100,0,1),new Pen(brush,4*s){StartLineCap=PenLineCap.Round,EndLineCap=PenLineCap.Round});
+        if(config.ShowSecondaryRing&&reading?.Windows.Where(w=>w.Id!=window?.Id).OrderByDescending(w=>w.UsedPercent).FirstOrDefault() is {} second)Arc(drawing,center,radius-5*s,Math.Clamp(second.UsedPercent/100,.001,1),new Pen(RailCard.Secondary(config),s));
+        if(config.ShowClock&&window is {ReportsLength:true,ResetsAt:{} reset,WindowSeconds:>0}&&window.WindowSeconds is {} seconds)Arc(drawing,center,radius+4*s,Math.Clamp(1-(reset-DateTimeOffset.Now).TotalSeconds/seconds,.001,1),new Pen(RailCard.Secondary(config),s));
+        var initial=definition?.Name[..Math.Min(2,definition.Name.Length)]??"P";
+        if(config.AnimatedMarks){var shape=int.TryParse(account.Extra.GetValueOrDefault("botBody"),out var body)?body:0;var personality=int.TryParse(account.Extra.GetValueOrDefault("botPersonality"),out var mood)?mood:0;BotRenderer.Draw(drawing,center,brush,window?.Exhausted==true?"spent":active?"working":fetching?"fetching":"quiet",Math.Clamp(shape,0,17),Math.Clamp(personality,0,7));}
+        else if(!ProviderMark.Draw(drawing,account.ProviderId,new Rect(center.X-9*s,center.Y-9*s,18*s,18*s),white))Text(drawing,initial,new Point(center.X,center.Y-8*s),12*s,white,true);
+        var label=percent is {} p?$"{UsageFigures.Percent(p,config.ShowRemaining)}%":reading?.Balance is {} money?RailCard.Balance(money):fetching?"···":"—";
+        Text(drawing,label,new Point(center.X,inset+42*s),13*s,percent>=90?brush:reading?.IsStale==true?RailCard.Secondary(config):white,true);
+        if(fetching||active){var angle=DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()/600d;drawing.DrawEllipse(white,null,new Point(center.X+radius*Math.Cos(angle),center.Y+radius*Math.Sin(angle)),2*s,2*s);}
     }
-    private void Text(DrawingContext drawing,string text,Point point,double size,Brush brush,bool center){var formatted=new FormattedText(text,System.Globalization.CultureInfo.CurrentCulture,FlowDirection.LeftToRight,new Typeface("Segoe UI"),size,brush,VisualTreeHelper.GetDpi(this).PixelsPerDip);drawing.DrawText(formatted,new Point(point.X-(center?formatted.Width/2:0),point.Y));}
+    private void Text(DrawingContext drawing,string text,Point point,double size,Brush brush,bool center){var formatted=new FormattedText(text,System.Globalization.CultureInfo.CurrentCulture,FlowDirection.LeftToRight,new Typeface(new FontFamily("Segoe UI"),FontStyles.Normal,FontWeights.SemiBold,FontStretches.Normal),size,brush,VisualTreeHelper.GetDpi(this).PixelsPerDip);drawing.DrawText(formatted,new Point(point.X-(center?formatted.Width/2:0),point.Y));}
     private static void Arc(DrawingContext drawing,Point center,double radius,double fraction,Pen pen){if(fraction>=.999){drawing.DrawEllipse(null,pen,center,radius,radius);return;}var angle=fraction*2*Math.PI;var geometry=new StreamGeometry();using(var path=geometry.Open()){path.BeginFigure(new Point(center.X,center.Y-radius),false,false);path.ArcTo(new Point(center.X+radius*Math.Sin(angle),center.Y-radius*Math.Cos(angle)),new Size(radius,radius),0,fraction>.5,SweepDirection.Clockwise,true,false);}drawing.DrawGeometry(null,pen,geometry);}
 }
