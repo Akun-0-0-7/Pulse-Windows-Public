@@ -6,7 +6,7 @@ The upstream `bot-data.json` is not included. Windows animated marks are drawn i
 
 ## ZstdSharp.Port 0.8.8
 
-Copyright (c) 2026 Oleg Stepanischev. MIT License. Project: https://github.com/oleg-st/ZstdSharp . See Licenses/ZstdSharp-MIT.txt. The package is a managed port of Zstandard; its source repository carries the applicable upstream notices.
+Copyright (c) 2021 Oleg Stepanischev. MIT License. Project: https://github.com/oleg-st/ZstdSharp . The original license for package source commit 2cd0c019693bc786a5fe5c3be94e107b24e7267e is preserved in Licenses/ZstdSharp-MIT.txt. The package is a managed port of Zstandard; its source repository carries the applicable upstream notices.
 
 ## Microsoft WebView2 SDK 1.0.4258.31
 
@@ -14,4 +14,4 @@ Copyright Microsoft Corporation. Distributed under the accompanying Microsoft te
 
 ## .NET 10
 
-The self-contained release includes the .NET and Windows Desktop runtimes. They are Microsoft/.NET Foundation components under their respective MIT and third-party notices. Source and notices: https://github.com/dotnet/runtime and https://github.com/dotnet/wpf .
+The self-contained release includes the .NET and Windows Desktop runtimes. Their MIT licenses and available third-party notices are copied from the exact restored runtime packs named in Pulse.runtimeconfig.json and preserved under Licenses/Microsoft.*-LICENSE.txt and Licenses/Microsoft.*-THIRD-PARTY-NOTICES.txt. Source and notices: https://github.com/dotnet/runtime and https://github.com/dotnet/wpf .

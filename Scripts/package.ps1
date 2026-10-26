@@ -31,10 +31,21 @@ try {
     Copy-Item -LiteralPath (Join-Path $taskWebView 'LICENSE.txt') -Destination (Join-Path $taskThirdParty 'WebView2-LICENSE.txt')
     Copy-Item -LiteralPath (Join-Path $taskWebView 'NOTICE.txt') -Destination (Join-Path $taskThirdParty 'WebView2-NOTICE.txt')
     Copy-Item -LiteralPath (Join-Path $taskRoot 'Licenses\ZstdSharp-MIT.txt') -Destination $taskThirdParty
-    $taskRuntimeRoot = Split-Path -Parent $taskDotnet
-    foreach ($taskLicense in @('LICENSE.txt','ThirdPartyNotices.txt')) {
-        $taskLicensePath = Join-Path $taskRuntimeRoot $taskLicense
-        if (Test-Path -LiteralPath $taskLicensePath) { Copy-Item -LiteralPath $taskLicensePath -Destination (Join-Path $taskThirdParty ('.NET-' + $taskLicense)) }
+    $taskAssets = Get-Content -LiteralPath (Join-Path $taskRoot 'src\Pulse.Desktop\obj\project.assets.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    $taskRuntimeConfig = Get-Content -LiteralPath (Join-Path $taskOutput 'Pulse.runtimeconfig.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    $taskFrameworks = @($taskRuntimeConfig.runtimeOptions.includedFrameworks)
+    if ($taskFrameworks.Count -ne 2) { throw '未取得公开包实际使用的两个 .NET 运行组件' }
+    foreach ($taskFramework in $taskFrameworks) {
+        $taskPackId = ($taskFramework.name + '.Runtime.win-x64').ToLowerInvariant()
+        $taskPackRelative = Join-Path $taskPackId $taskFramework.version
+        $taskPackRoot = $taskAssets.packageFolders.PSObject.Properties.Name | ForEach-Object { Join-Path $_ $taskPackRelative } | Where-Object { Test-Path -LiteralPath $_ -PathType Container } | Select-Object -First 1
+        if (-not $taskPackRoot) { throw ('找不到实际运行组件：' + $taskFramework.name + ' ' + $taskFramework.version) }
+        $taskLicense = Get-ChildItem -LiteralPath $taskPackRoot -File | Where-Object { $_.Name -in @('LICENSE','LICENSE.TXT') } | Select-Object -First 1
+        if (-not $taskLicense) { throw ('运行组件缺少原始许可证：' + $taskFramework.name) }
+        $taskLicensePrefix = $taskFramework.name + '-' + $taskFramework.version
+        Copy-Item -LiteralPath $taskLicense.FullName -Destination (Join-Path $taskThirdParty ($taskLicensePrefix + '-LICENSE.txt'))
+        $taskNotices = Get-ChildItem -LiteralPath $taskPackRoot -File | Where-Object { $_.Name -match '^THIRD[-_]?PARTY[-_]?NOTICES\.TXT$' } | Select-Object -First 1
+        if ($taskNotices) { Copy-Item -LiteralPath $taskNotices.FullName -Destination (Join-Path $taskThirdParty ($taskLicensePrefix + '-THIRD-PARTY-NOTICES.txt')) }
     }
     $taskCommit = & git -C $taskRoot rev-parse --verify HEAD 2>$null
     if ($LASTEXITCODE -ne 0) { $taskCommit = $null }
