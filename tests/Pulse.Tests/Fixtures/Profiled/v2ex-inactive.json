@@ -1,0 +1,19 @@
+{
+  "success": true,
+  "message": "Current AI Chat 5h quota",
+  "result": {
+    "active": false,
+    "total_tokens": 8020000,
+    "used_tokens": 0,
+    "remaining_tokens": 8020000,
+    "used_percent": 0,
+    "period_start": 0,
+    "period_end": 0,
+    "extra_usage": {
+      "pack_count": 0,
+      "total_tokens": 0,
+      "used_tokens": 0,
+      "remaining_tokens": 0
+    }
+  }
+}

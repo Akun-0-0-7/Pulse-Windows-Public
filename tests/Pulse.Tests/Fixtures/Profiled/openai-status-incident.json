@@ -1,0 +1,26 @@
+{
+  "summary": {
+    "affected_components": [
+      {"component_id": "01KMKFAMWKNQ84Z1766MV08ZDE", "status": "full_outage"},
+      {"component_id": "01JVCV8YSWZFRSM1G5CVP253SK", "status": "degraded_performance"},
+      {"component_id": "01KMP3KP5M8X0EBTVW6KN327EE", "status": "something_new"},
+      {"component_id": "01JMXBRMFEMZK0HPK19RYET250", "status": "partial_outage"}
+    ],
+    "ongoing_incidents": [],
+    "structure": {
+      "items": [
+        {"group": {"id": "01JMXBRMFE6N2NNT7DG6XZQ6PW", "name": "APIs", "hidden": false, "components": [
+          {"component_id": "01JMXBRMFEMZK0HPK19RYET250", "name": "Fine-tuning", "hidden": false}
+        ]}},
+        {"group": {"id": "01KMKF9EBTCD8BN9PG8DJZXRSQ", "name": "Codex", "hidden": false, "components": [
+          {"component_id": "01JVCV8YSWZFRSM1G5CVP253SK", "name": "Codex Web", "hidden": false},
+          {"component_id": "01KMP3KP5MGE23B80K1EK4S8PV", "name": "Codex API", "hidden": false},
+          {"component_id": "01KMKFAMWKNQ84Z1766MV08ZDE", "name": "CLI", "hidden": false},
+          {"component_id": "01KMP3KP5M8X0EBTVW6KN327EE", "name": "VS Code extension", "hidden": false},
+          {"component_id": "01KMP3KP5MHIDDENHIDDENHIDD", "name": "Hidden row", "hidden": true}
+        ]}},
+        {"component": {"component_id": "01JSFK5QX36ZRW0TW0ZV0ZYFXQ", "name": "Standalone", "hidden": false}}
+      ]
+    }
+  }
+}

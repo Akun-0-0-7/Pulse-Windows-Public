@@ -1,0 +1,10 @@
+{
+  "daily_percentage": 2,
+  "daily_reset_at": "2026-09-14T00:00:00-08:00",
+  "has_quota_allocation": true,
+  "hide_daily_quota": false,
+  "is_quota_plan": true,
+  "overage_balance": 10,
+  "weekly_percentage": 1,
+  "weekly_reset_at": "2026-09-20T00:00:00-08:00"
+}

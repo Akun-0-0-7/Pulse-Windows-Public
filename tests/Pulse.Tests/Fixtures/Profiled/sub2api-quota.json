@@ -1,0 +1,10 @@
+{
+  "isValid": true,
+  "planName": "Claude 拼车",
+  "unit": "USD",
+  "quota": {"limit": 50, "used": 12.5, "remaining": 37.5, "unit": "USD"},
+  "rate_limits": [
+    {"window": "5h", "limit": 100, "used": 91, "remaining": 9, "reset_at": "2026-09-22T09:00:00Z"},
+    {"window": "7d", "limit": 700, "used": 210, "remaining": 490, "reset_at": "2026-09-27T00:00:00Z"}
+  ]
+}

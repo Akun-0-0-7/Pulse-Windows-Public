@@ -1,0 +1,8 @@
+{
+  "plan_name": "team",
+  "daily_percentage": 0,
+  "weekly_percentage": 58,
+  "weekly_reset_at": 1789891200000,
+  "hide_daily_quota": true,
+  "overage_balance_cents": 250
+}

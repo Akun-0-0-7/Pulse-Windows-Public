@@ -1,0 +1,10 @@
+{
+  "planInfo": {
+    "planName": "Pro+",
+    "includedAmountCents": 7000,
+    "price": "$60/mo",
+    "billingCycleEnd": "1793491200000",
+    "includedUsagePeriod": "INCLUDED_USAGE_PERIOD_MONTHLY"
+  },
+  "isMerged": false
+}

@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "version": "v0.9.0",
+    "system_name": "Token Relay",
+    "quota_per_unit": 500000,
+    "display_in_currency": false,
+    "quota_display_type": "TOKENS"
+  }
+}

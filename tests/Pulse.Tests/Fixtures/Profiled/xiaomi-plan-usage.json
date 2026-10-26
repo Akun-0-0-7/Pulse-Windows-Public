@@ -1,0 +1,12 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "monthUsage": {
+      "percent": 37.5,
+      "items": [
+        { "name": "Coding Plan", "used": 3750000, "limit": 10000000, "percent": 37.5 }
+      ]
+    }
+  }
+}

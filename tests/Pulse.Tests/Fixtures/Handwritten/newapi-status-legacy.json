@@ -1,0 +1,10 @@
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "version": "v0.5.4",
+    "system_name": "One API",
+    "quota_per_unit": 500000,
+    "display_in_currency": true
+  }
+}

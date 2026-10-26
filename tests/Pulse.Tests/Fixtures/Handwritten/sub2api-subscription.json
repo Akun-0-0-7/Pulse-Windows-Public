@@ -1,0 +1,13 @@
+{
+  "isValid": true,
+  "planName": "Codex 月付",
+  "subscription": {
+    "daily_usage_usd": 3.2,
+    "daily_limit_usd": 10,
+    "weekly_usage_usd": 21.5,
+    "weekly_limit_usd": 60,
+    "monthly_usage_usd": 74,
+    "monthly_limit_usd": 0,
+    "expires_at": "2026-10-20T00:00:00Z"
+  }
+}

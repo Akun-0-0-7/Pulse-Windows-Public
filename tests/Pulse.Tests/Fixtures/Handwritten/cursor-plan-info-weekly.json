@@ -1,0 +1,15 @@
+{
+  "planInfo": {
+    "planName": "Premium",
+    "price": "",
+    "billingCycleEnd": "1794530890655",
+    "includedUsagePeriod": "INCLUDED_USAGE_PERIOD_WEEKLY",
+    "includedUsageResetsAt": "1792475010907"
+  },
+  "nextUpgrade": {
+    "tier": "super",
+    "name": "Super",
+    "includedUsagePeriod": "INCLUDED_USAGE_PERIOD_WEEKLY"
+  },
+  "isMerged": true
+}

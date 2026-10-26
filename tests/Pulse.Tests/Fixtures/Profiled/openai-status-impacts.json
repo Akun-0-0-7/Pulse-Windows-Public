@@ -1,0 +1,505 @@
+{
+  "component_impacts": [
+    {
+      "start_at": "2026-07-18T08:05:37.238Z",
+      "end_at": "2026-07-18T12:58:14.016Z",
+      "id": "01KXT44TAQSW841YN38DQADC6T",
+      "component_id": "01KMKFAMWKNQ84Z1766MV08ZDE",
+      "status_page_incident_id": "01KXT44TAQQ2R0AZDDVSJGAC4H",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-20T00:34:34.443Z",
+      "end_at": "2026-07-20T00:39:46.943Z",
+      "id": "01KXYF4BTCHWXKCWTGDDG4BNYC",
+      "component_id": "01KMP3KP5M8X0EBTVW6KN327EE",
+      "status_page_incident_id": "01KXYF4BTCV9DTZ5NDSFN716FH",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-20T00:34:34.443Z",
+      "end_at": "2026-07-20T03:25:54.307Z",
+      "id": "01KXYF4BTCYZVAM80XG89SG77D",
+      "component_id": "01JVCV8YSWZFRSM1G5CVP253SK",
+      "status_page_incident_id": "01KXYF4BTCV9DTZ5NDSFN716FH",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-20T00:34:34.443Z",
+      "end_at": "2026-07-20T00:39:46.943Z",
+      "id": "01KXYF4BTCXJ88P225YK3RR8SN",
+      "component_id": "01KMKFAMWKNQ84Z1766MV08ZDE",
+      "status_page_incident_id": "01KXYF4BTCV9DTZ5NDSFN716FH",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-23T15:56:57.525Z",
+      "end_at": "2026-07-23T16:48:54.372Z",
+      "id": "01KYWNJB48VDX968N56XZQAK0N",
+      "component_id": "01JVCV8YSWZFRSM1G5CVP253SK",
+      "status_page_incident_id": "01KY7SX5MYJ2BP51X5MXAPYX71",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-23T15:56:57.525Z",
+      "end_at": "2026-07-23T16:48:54.372Z",
+      "id": "01KYWNJB48ABRNK9S8QBCGE7KW",
+      "component_id": "01KMKFAMWKNQ84Z1766MV08ZDE",
+      "status_page_incident_id": "01KY7SX5MYJ2BP51X5MXAPYX71",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-23T15:56:57.525Z",
+      "end_at": "2026-07-23T16:48:54.372Z",
+      "id": "01KYWNJB480V2RXGKSYTEJ12FN",
+      "component_id": "01KMP3KP5M8X0EBTVW6KN327EE",
+      "status_page_incident_id": "01KY7SX5MYJ2BP51X5MXAPYX71",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-23T15:56:57.525Z",
+      "end_at": "2026-07-23T16:48:54.372Z",
+      "id": "01KYWNJB480G4HGS0TMH2998S4",
+      "component_id": "01KMP3KP5MGE23B80K1EK4S8PV",
+      "status_page_incident_id": "01KY7SX5MYJ2BP51X5MXAPYX71",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-23T19:37:21.308Z",
+      "end_at": "2026-07-23T20:22:48.718Z",
+      "id": "01KYWNJB48H43CDQBN1G50VTHC",
+      "component_id": "01KMKFAMWKNQ84Z1766MV08ZDE",
+      "status_page_incident_id": "01KY7SX5MYJ2BP51X5MXAPYX71",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-23T19:37:21.308Z",
+      "end_at": "2026-07-23T20:22:48.718Z",
+      "id": "01KYWNJB48CB2DJ9RKV0VE827N",
+      "component_id": "01KMP3KP5MGE23B80K1EK4S8PV",
+      "status_page_incident_id": "01KY7SX5MYJ2BP51X5MXAPYX71",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-23T19:37:21.308Z",
+      "end_at": "2026-07-23T20:22:48.718Z",
+      "id": "01KYWNJB48SFQF59Q16ZB2SMR7",
+      "component_id": "01JVCV8YSWZFRSM1G5CVP253SK",
+      "status_page_incident_id": "01KY7SX5MYJ2BP51X5MXAPYX71",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-23T19:37:21.308Z",
+      "end_at": "2026-07-23T20:22:48.718Z",
+      "id": "01KYWNJB48ZYCKN2J95864Y26F",
+      "component_id": "01KMP3KP5M8X0EBTVW6KN327EE",
+      "status_page_incident_id": "01KY7SX5MYJ2BP51X5MXAPYX71",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-24T07:55:28.019Z",
+      "end_at": "2026-07-24T09:35:02.304Z",
+      "id": "01KY9HYHCMKZRNGDESYFRCZJTD",
+      "component_id": "01KMKFAMWKNQ84Z1766MV08ZDE",
+      "status_page_incident_id": "01KY9HYHCMK8AND23B4X17XQEK",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-24T07:55:28.019Z",
+      "end_at": "2026-07-24T09:35:02.304Z",
+      "id": "01KY9HYHCMX6NP3PTPRPW141X3",
+      "component_id": "01JVCV8YSWZFRSM1G5CVP253SK",
+      "status_page_incident_id": "01KY9HYHCMK8AND23B4X17XQEK",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-24T07:55:28.019Z",
+      "end_at": "2026-07-24T09:35:02.304Z",
+      "id": "01KY9HYHCME0H1YSVY5038BWBH",
+      "component_id": "01KMP3KP5M8X0EBTVW6KN327EE",
+      "status_page_incident_id": "01KY9HYHCMK8AND23B4X17XQEK",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-24T07:55:28.019Z",
+      "end_at": "2026-07-24T09:35:02.304Z",
+      "id": "01KY9HYHCM2EHSBMVK6W09EXHG",
+      "component_id": "01KMP3KP5MGE23B80K1EK4S8PV",
+      "status_page_incident_id": "01KY9HYHCMK8AND23B4X17XQEK",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-25T09:17:49.024Z",
+      "end_at": "2026-07-25T11:08:36.611Z",
+      "id": "01KYC921K1NY2JFJ18NYJPHVGA",
+      "component_id": "01KMP3KP5MGE23B80K1EK4S8PV",
+      "status_page_incident_id": "01KYC921K145JTR1JK7DYKGWH1",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-25T09:17:49.024Z",
+      "end_at": "2026-07-25T11:08:36.611Z",
+      "id": "01KYC921K1M8M9KNJTV6C60GCN",
+      "component_id": "01KMP3KP5M8X0EBTVW6KN327EE",
+      "status_page_incident_id": "01KYC921K145JTR1JK7DYKGWH1",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-25T09:17:49.024Z",
+      "end_at": "2026-07-25T11:08:36.611Z",
+      "id": "01KYC921K1PQDT56N5DPZ3FP2W",
+      "component_id": "01KMKFAMWKNQ84Z1766MV08ZDE",
+      "status_page_incident_id": "01KYC921K145JTR1JK7DYKGWH1",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-25T09:17:49.024Z",
+      "end_at": "2026-07-25T11:08:36.611Z",
+      "id": "01KYC921K1N5HZPR8M4TW5X78V",
+      "component_id": "01JVCV8YSWZFRSM1G5CVP253SK",
+      "status_page_incident_id": "01KYC921K145JTR1JK7DYKGWH1",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-25T11:35:24.966Z",
+      "end_at": "2026-07-25T11:57:02.014Z",
+      "id": "01KYCGY017XC9R2ES5DYRAFA4X",
+      "component_id": "01KMP3KP5M8X0EBTVW6KN327EE",
+      "status_page_incident_id": "01KYCGY017EG43XZS6GFVXA8VH",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-25T11:35:24.966Z",
+      "end_at": "2026-07-25T11:57:02.014Z",
+      "id": "01KYCGY017MS7D8MSG5F3M2V2P",
+      "component_id": "01KMKFAMWKNQ84Z1766MV08ZDE",
+      "status_page_incident_id": "01KYCGY017EG43XZS6GFVXA8VH",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-25T11:35:24.966Z",
+      "end_at": "2026-07-25T11:57:02.014Z",
+      "id": "01KYCGY017H2AR01P8PSYF0WZY",
+      "component_id": "01KMP3KP5MGE23B80K1EK4S8PV",
+      "status_page_incident_id": "01KYCGY017EG43XZS6GFVXA8VH",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-07-25T11:35:24.966Z",
+      "end_at": "2026-07-25T11:57:02.014Z",
+      "id": "01KYCGY017A263Z7B2WH5P8WAH",
+      "component_id": "01JVCV8YSWZFRSM1G5CVP253SK",
+      "status_page_incident_id": "01KYCGY017EG43XZS6GFVXA8VH",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-08-20T16:58:53.272Z",
+      "end_at": "2026-08-20T17:15:51.764Z",
+      "id": "01M0G1RZERVWW6B29BS7SSJ9VH",
+      "component_id": "01KMP3KP5MGE23B80K1EK4S8PV",
+      "status_page_incident_id": "01M0G1RZER839AZXWMYKSZF3GR",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-09-03T14:58:23.907Z",
+      "end_at": "2026-09-03T16:55:49.046Z",
+      "id": "01M1KWEDH4PBMQTE9KHTTGKYR7",
+      "component_id": "01JVCV8YSWZFRSM1G5CVP253SK",
+      "status_page_incident_id": "01M1KWEDH417T2CF44YYHZDFCR",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-09-03T14:58:23.907Z",
+      "end_at": "2026-09-03T16:55:49.046Z",
+      "id": "01M1KWEDH42JZJ09G84CM45C06",
+      "component_id": "01KMKFAMWKNQ84Z1766MV08ZDE",
+      "status_page_incident_id": "01M1KWEDH417T2CF44YYHZDFCR",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-09-03T14:58:23.907Z",
+      "end_at": "2026-09-03T16:55:49.046Z",
+      "id": "01M1KWEDH48S075WNSS73QJVYV",
+      "component_id": "01KMP3KP5M8X0EBTVW6KN327EE",
+      "status_page_incident_id": "01M1KWEDH417T2CF44YYHZDFCR",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-09-03T14:58:23.907Z",
+      "end_at": "2026-09-03T16:55:49.046Z",
+      "id": "01M1KWEDH4R0T737GXPMDDC5J0",
+      "component_id": "01KMP3KP5MGE23B80K1EK4S8PV",
+      "status_page_incident_id": "01M1KWEDH417T2CF44YYHZDFCR",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-09-04T07:00:26.788Z",
+      "end_at": "2026-09-04T10:46:54.348Z",
+      "id": "01M1NKFZH5NCQNXBC9X3TG98NN",
+      "component_id": "01JVCV8YSWZFRSM1G5CVP253SK",
+      "status_page_incident_id": "01M1NKFZH5EEYEREC54HNAHY35",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-09-25T22:58:48.603Z",
+      "end_at": "2026-09-25T23:54:41.792Z",
+      "id": "01M3DCNWMWXY4NM5SYA95V6ABS",
+      "component_id": "01KMP3KP5M8X0EBTVW6KN327EE",
+      "status_page_incident_id": "01M3DCNWMW57HYK8FJ5FBFPA39",
+      "status": "full_outage"
+    },
+    {
+      "start_at": "2026-09-25T22:58:48.603Z",
+      "end_at": "2026-09-25T23:54:41.792Z",
+      "id": "01M3DCNWMW59357G3A31JGC7E1",
+      "component_id": "01JVCV8YSWZFRSM1G5CVP253SK",
+      "status_page_incident_id": "01M3DCNWMW57HYK8FJ5FBFPA39",
+      "status": "full_outage"
+    },
+    {
+      "start_at": "2026-09-25T22:58:48.603Z",
+      "end_at": "2026-09-25T23:54:41.792Z",
+      "id": "01M3DCNWMWFG0V3FYYJG0EFAQQ",
+      "component_id": "01KMKFAMWKNQ84Z1766MV08ZDE",
+      "status_page_incident_id": "01M3DCNWMW57HYK8FJ5FBFPA39",
+      "status": "full_outage"
+    },
+    {
+      "start_at": "2026-09-25T22:58:48.603Z",
+      "end_at": "2026-09-25T23:54:41.792Z",
+      "id": "01M3DCNWMW699WWTD1CMVZR20B",
+      "component_id": "01KMP3KP5MGE23B80K1EK4S8PV",
+      "status_page_incident_id": "01M3DCNWMW57HYK8FJ5FBFPA39",
+      "status": "full_outage"
+    },
+    {
+      "start_at": "2026-09-29T17:52:52.793Z",
+      "end_at": "2026-09-29T23:14:02.002Z",
+      "id": "01M3Q6X5T5H403621KY6E3R5CG",
+      "component_id": "01KMKFAMWKNQ84Z1766MV08ZDE",
+      "status_page_incident_id": "01M3Q4RK1SM4EMK445GGPG7C0N",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-09-29T17:52:52.793Z",
+      "end_at": "2026-09-29T23:14:02.002Z",
+      "id": "01M3Q6X5T5Q5AV51KTKK0SCT63",
+      "component_id": "01JVCV8YSWZFRSM1G5CVP253SK",
+      "status_page_incident_id": "01M3Q4RK1SM4EMK445GGPG7C0N",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-09-29T17:52:52.793Z",
+      "end_at": "2026-09-29T23:14:02.002Z",
+      "id": "01M3Q6X5T5505P20W7C43WJQW4",
+      "component_id": "01KMP3KP5M8X0EBTVW6KN327EE",
+      "status_page_incident_id": "01M3Q4RK1SM4EMK445GGPG7C0N",
+      "status": "degraded_performance"
+    },
+    {
+      "start_at": "2026-09-29T17:52:52.793Z",
+      "end_at": "2026-09-29T23:14:02.002Z",
+      "id": "01M3Q6X5T57THFD89YZN1AZSH7",
+      "component_id": "01KMP3KP5MGE23B80K1EK4S8PV",
+      "status_page_incident_id": "01M3Q4RK1SM4EMK445GGPG7C0N",
+      "status": "degraded_performance"
+    }
+  ],
+  "component_uptimes": [
+    {
+      "component_id": "01JMXBRMFE6N2NNT7DG6XZQ6PW",
+      "data_available_since": "2021-03-02T02:07:24Z",
+      "uptime": "100.00"
+    },
+    {
+      "component_id": "01JP8CD9JR3HR6Y7G4Q75N4DVW",
+      "data_available_since": "2025-03-12T23:30:00Z",
+      "uptime": "100.00"
+    },
+    {
+      "component_id": "01M3Q6W0264T1RJS1YEM47CAQJ",
+      "data_available_since": "2026-09-29T17:52:52Z",
+      "uptime": "100.00"
+    },
+    {
+      "component_id": "01M3Q6W0262E8VW5DE1MJMMN0T",
+      "data_available_since": "2026-09-29T18:29:41Z",
+      "uptime": "100.00"
+    },
+    {
+      "component_id": "01JMXBRMFEMZK0HPK19RYET250",
+      "data_available_since": "2021-03-02T02:07:24Z",
+      "uptime": "100.00"
+    },
+    {
+      "component_id": "01JMXBRMFEV0AJ0VVS68N9CD6R",
+      "data_available_since": "2021-03-02T02:07:24Z",
+      "uptime": "100.00"
+    },
+    {
+      "component_id": "01JMXBRMFE4MAP2BHSJNZ787WX",
+      "data_available_since": "2021-03-02T02:07:24Z",
+      "uptime": "99.95"
+    },
+    {
+      "component_id": "01JMXBRMFE5ESNNV8JDHVCGSRD",
+      "data_available_since": "2021-03-02T02:07:24Z",
+      "uptime": "100.00"
+    },
+    {
+      "component_id": "01JMXBRMFEKVBWKK82B44QFMCE",
+      "data_available_since": "2021-03-02T02:07:24Z",
+      "uptime": "100.00"
+    },
+    {
+      "component_id": "01JMXBRMFEVZ7E0X9GD9FWR9WX",
+      "data_available_since": "2021-03-02T02:07:24Z",
+      "uptime": "100.00"
+    },
+    {
+      "component_id": "01JMXBRMFEQW613TFE89F45035",
+      "data_available_since": "2021-03-02T02:07:24Z",
+      "uptime": "100.00"
+    },
+    {
+      "component_id": "01JMXBRMFESJCBGJR10PDD3WCQ",
+      "data_available_since": "2021-03-02T02:07:24Z",
+      "uptime": "100.00"
+    },
+    {
+      "component_id": "01JSM5RTJWHRWDTS6Q604VEW3B",
+      "data_available_since": "2025-04-24T15:13:29Z",
+      "uptime": "99.995"
+    },
+    {
+      "data_available_since": "2021-03-02T02:07:24Z",
+      "status_page_component_group_id": "01K5H8S53SY1KMS4GQMNMQM1K5",
+      "uptime": "99.95"
+    },
+    {
+      "component_id": "01JMXBNJXGV1T5GT2M9XA83XNG",
+      "data_available_since": "2021-03-02T02:07:24Z",
+      "uptime": "99.96"
+    },
+    {
+      "component_id": "01JMXBNJXG1S2D9V65P1ZZTD94",
+      "data_available_since": "2021-03-02T02:07:24Z",
+      "uptime": "99.97"
+    },
+    {
+      "component_id": "01KX45G1SH21AX5DT93D4HMF0P",
+      "data_available_since": "2026-07-09T19:25:56Z",
+      "uptime": "99.86"
+    },
+    {
+      "component_id": "01KMKFAMWKQ81YWSE1Z18R6VHR",
+      "data_available_since": "2026-03-25T21:45:05Z",
+      "uptime": "99.98"
+    },
+    {
+      "component_id": "01JNKS9D9S72PMP1938PVFFQN4",
+      "data_available_since": "2025-03-05T18:32:33Z",
+      "uptime": "99.98"
+    },
+    {
+      "component_id": "01JMXBNJXGKKP51D4DEJ2HZJ8Q",
+      "data_available_since": "2021-03-02T02:07:24Z",
+      "uptime": "99.98"
+    },
+    {
+      "component_id": "01JMXBNJXG1YMQPPCPCQX3MPA2",
+      "data_available_since": "2021-03-02T02:07:24Z",
+      "uptime": "99.98"
+    },
+    {
+      "component_id": "01JMXBNJXGGT5SR5DB9J7GYY48",
+      "data_available_since": "2021-03-02T02:07:24Z",
+      "uptime": "99.96"
+    },
+    {
+      "component_id": "01JSFK5QX36ZRW0TW0ZV0ZYFXQ",
+      "data_available_since": "2025-04-22T18:45:00Z",
+      "uptime": "99.98"
+    },
+    {
+      "component_id": "01JQ7EKW990MSPSWVXC7VPV2ZJ",
+      "data_available_since": "2025-03-25T20:06:33Z",
+      "uptime": "99.79"
+    },
+    {
+      "component_id": "01JSYVYQSWMJ9QG35XHP08BHA7",
+      "data_available_since": "2025-04-28T18:53:35Z",
+      "uptime": "99.98"
+    },
+    {
+      "component_id": "01JSG1XMJ9RVJJQ0E85NVSJ2AZ",
+      "data_available_since": "2025-04-23T00:34:00Z",
+      "uptime": "99.98"
+    },
+    {
+      "component_id": "01M3Q6NERHVE2WPPAQRHBAC6XB",
+      "data_available_since": "2026-09-29T18:26:07Z",
+      "uptime": "100.00"
+    },
+    {
+      "component_id": "01M3Q6NERHS4BG0HQ85VAR1SRH",
+      "data_available_since": "2026-09-29T18:26:07Z",
+      "uptime": "100.00"
+    },
+    {
+      "component_id": "01KX45G1SHQQ9DTAX9S4W7FV8G",
+      "data_available_since": "2026-07-09T19:25:56Z",
+      "uptime": "99.98"
+    },
+    {
+      "component_id": "01K6TVGGGDCP0PPGCHXAG3AQX8",
+      "data_available_since": "2025-07-16T02:26:00Z",
+      "uptime": "99.96"
+    },
+    {
+      "data_available_since": "2021-03-02T02:07:24Z",
+      "status_page_component_group_id": "01K5H8S53SY1KMS4GQMNMZXTR1",
+      "uptime": "99.64"
+    },
+    {
+      "component_id": "01JVCV8YSWZFRSM1G5CVP253SK",
+      "data_available_since": "2025-05-16T15:26:46Z",
+      "uptime": "99.95"
+    },
+    {
+      "component_id": "01KMP3KP5MGE23B80K1EK4S8PV",
+      "data_available_since": "2026-03-26T22:18:01Z",
+      "uptime": "99.95"
+    },
+    {
+      "component_id": "01KMKFAMWKNQ84Z1766MV08ZDE",
+      "data_available_since": "2026-03-25T21:45:05Z",
+      "uptime": "99.95"
+    },
+    {
+      "component_id": "01KMP3KP5M8X0EBTVW6KN327EE",
+      "data_available_since": "2026-03-26T22:18:01Z",
+      "uptime": "99.95"
+    },
+    {
+      "data_available_since": "2025-05-16T15:26:46Z",
+      "status_page_component_group_id": "01KMKF9EBTCD8BN9PG8DJZXRSQ",
+      "uptime": "99.95"
+    },
+    {
+      "component_id": "01KKAD7C71MCCH3FTREMJH4AAS",
+      "data_available_since": "2026-03-09T22:59:29Z",
+      "uptime": "100.00"
+    },
+    {
+      "data_available_since": "2026-03-09T22:59:29Z",
+      "status_page_component_group_id": "01KKACDSZF5G5JTBJY83GF176Z",
+      "uptime": "100.00"
+    },
+    {
+      "component_id": "01KVR95C58GGWHV7RYBT32NP11",
+      "data_available_since": "2026-06-22T18:23:25Z",
+      "uptime": "99.992"
+    }
+  ]
+}

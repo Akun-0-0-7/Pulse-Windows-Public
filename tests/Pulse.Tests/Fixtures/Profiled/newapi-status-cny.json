@@ -1,0 +1,12 @@
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "version": "v0.9.0",
+    "system_name": "示例中转",
+    "quota_per_unit": 500000,
+    "display_in_currency": true,
+    "quota_display_type": "CNY",
+    "usd_exchange_rate": 7.3
+  }
+}

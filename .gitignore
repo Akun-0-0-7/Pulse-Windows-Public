@@ -1,0 +1,8 @@
+.tools/
+**/bin/
+**/obj/
+artifacts/
+.artifacts/
+.superpowers/
+*.user
+local-data/

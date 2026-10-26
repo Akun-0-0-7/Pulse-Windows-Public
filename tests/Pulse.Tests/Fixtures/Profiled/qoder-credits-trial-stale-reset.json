@@ -1,0 +1,218 @@
+{
+  "user_id": "redacted",
+  "quota_key": "big_model_credits",
+  "status": "active",
+  "plan_quota": {
+    "quota_summary": {
+      "used_value": 0,
+      "limit_value": 0,
+      "remaining_value": 0,
+      "usage_percentage": 0,
+      "unit": "credits"
+    },
+    "quota_detail": [
+      {
+        "id": "d0",
+        "limit_value": 0,
+        "used_value": 0,
+        "remaining_value": 0,
+        "unit": "credits",
+        "is_active": true,
+        "usage_percentage": 0,
+        "expires_at": 0,
+        "source": "PLAN",
+        "status": "ACTIVE"
+      }
+    ]
+  },
+  "resource_package_quota": {
+    "quota_summary": {
+      "used_value": 14,
+      "limit_value": 600,
+      "remaining_value": 586,
+      "usage_percentage": 3,
+      "unit": "credits"
+    },
+    "quota_detail": [
+      {
+        "id": "d1",
+        "limit_value": 100,
+        "used_value": 0,
+        "remaining_value": 100,
+        "unit": "credits",
+        "is_active": true,
+        "usage_percentage": 0,
+        "expires_at": 1792725492581,
+        "source": "RESOURCE_PACKAGE_SOURCE_BONUS",
+        "status": "ACTIVE"
+      },
+      {
+        "id": "d2",
+        "limit_value": 100,
+        "used_value": 0,
+        "remaining_value": 100,
+        "unit": "credits",
+        "is_active": true,
+        "usage_percentage": 0,
+        "expires_at": 1792678999643,
+        "source": "RESOURCE_PACKAGE_SOURCE_BONUS",
+        "status": "ACTIVE"
+      },
+      {
+        "id": "d3",
+        "limit_value": 100,
+        "used_value": 0,
+        "remaining_value": 100,
+        "unit": "credits",
+        "is_active": true,
+        "usage_percentage": 0,
+        "expires_at": 1792548135424,
+        "source": "RESOURCE_PACKAGE_SOURCE_BONUS",
+        "status": "ACTIVE"
+      },
+      {
+        "id": "d4",
+        "limit_value": 100,
+        "used_value": 0,
+        "remaining_value": 100,
+        "unit": "credits",
+        "is_active": true,
+        "usage_percentage": 0,
+        "expires_at": 1792475875491,
+        "source": "RESOURCE_PACKAGE_SOURCE_BONUS",
+        "status": "ACTIVE"
+      },
+      {
+        "id": "d5",
+        "limit_value": 100,
+        "used_value": 0,
+        "remaining_value": 100,
+        "unit": "credits",
+        "is_active": true,
+        "usage_percentage": 0,
+        "expires_at": 1792398411712,
+        "source": "RESOURCE_PACKAGE_SOURCE_BONUS",
+        "status": "ACTIVE"
+      },
+      {
+        "id": "d6",
+        "limit_value": 100,
+        "used_value": 14,
+        "remaining_value": 86,
+        "unit": "credits",
+        "is_active": true,
+        "usage_percentage": 15,
+        "expires_at": 1792313971562,
+        "source": "RESOURCE_PACKAGE_SOURCE_BONUS",
+        "status": "ACTIVE"
+      }
+    ]
+  },
+  "dedicated_resource_package_quota": {
+    "quota_summary": {
+      "used_value": 0,
+      "limit_value": 0,
+      "remaining_value": 0,
+      "usage_percentage": 0,
+      "unit": "credits"
+    },
+    "quota_detail": null
+  },
+  "total_quota": {
+    "quota_summary": {
+      "used_value": 14,
+      "limit_value": 600,
+      "remaining_value": 586,
+      "usage_percentage": 3,
+      "unit": "credits"
+    },
+    "quota_detail": [
+      {
+        "id": "d0",
+        "limit_value": 0,
+        "used_value": 0,
+        "remaining_value": 0,
+        "unit": "credits",
+        "is_active": true,
+        "usage_percentage": 0,
+        "expires_at": 0,
+        "source": "PLAN",
+        "status": "ACTIVE"
+      },
+      {
+        "id": "d1",
+        "limit_value": 100,
+        "used_value": 0,
+        "remaining_value": 100,
+        "unit": "credits",
+        "is_active": true,
+        "usage_percentage": 0,
+        "expires_at": 1792725492581,
+        "source": "RESOURCE_PACKAGE_SOURCE_BONUS",
+        "status": "ACTIVE"
+      },
+      {
+        "id": "d2",
+        "limit_value": 100,
+        "used_value": 0,
+        "remaining_value": 100,
+        "unit": "credits",
+        "is_active": true,
+        "usage_percentage": 0,
+        "expires_at": 1792678999643,
+        "source": "RESOURCE_PACKAGE_SOURCE_BONUS",
+        "status": "ACTIVE"
+      },
+      {
+        "id": "d3",
+        "limit_value": 100,
+        "used_value": 0,
+        "remaining_value": 100,
+        "unit": "credits",
+        "is_active": true,
+        "usage_percentage": 0,
+        "expires_at": 1792548135424,
+        "source": "RESOURCE_PACKAGE_SOURCE_BONUS",
+        "status": "ACTIVE"
+      },
+      {
+        "id": "d4",
+        "limit_value": 100,
+        "used_value": 0,
+        "remaining_value": 100,
+        "unit": "credits",
+        "is_active": true,
+        "usage_percentage": 0,
+        "expires_at": 1792475875491,
+        "source": "RESOURCE_PACKAGE_SOURCE_BONUS",
+        "status": "ACTIVE"
+      },
+      {
+        "id": "d5",
+        "limit_value": 100,
+        "used_value": 0,
+        "remaining_value": 100,
+        "unit": "credits",
+        "is_active": true,
+        "usage_percentage": 0,
+        "expires_at": 1792398411712,
+        "source": "RESOURCE_PACKAGE_SOURCE_BONUS",
+        "status": "ACTIVE"
+      },
+      {
+        "id": "d6",
+        "limit_value": 100,
+        "used_value": 14,
+        "remaining_value": 86,
+        "unit": "credits",
+        "is_active": true,
+        "usage_percentage": 15,
+        "expires_at": 1792313971562,
+        "source": "RESOURCE_PACKAGE_SOURCE_BONUS",
+        "status": "ACTIVE"
+      }
+    ]
+  },
+  "lastResetAt": 1784711831243,
+  "nextResetAt": 1787304668180
+}

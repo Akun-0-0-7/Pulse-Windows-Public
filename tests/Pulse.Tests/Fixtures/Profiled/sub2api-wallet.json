@@ -1,0 +1,17 @@
+{
+  "balance": 16.33538288,
+  "daily_usage": [
+    {"date": "2026-09-20", "requests": 26, "input_tokens": 327828, "output_tokens": 30805, "total_tokens": 1520745, "cost": 3.665716, "actual_cost": 0.6167072}
+  ],
+  "isValid": true,
+  "mode": "unrestricted",
+  "planName": "钱包余额",
+  "remaining": 16.33538288,
+  "unit": "USD",
+  "usage": {
+    "rpm": 0,
+    "today": {"actual_cost": 0.6167072, "cost": 3.665716, "requests": 26, "total_tokens": 1520745},
+    "total": {"actual_cost": 13.564617106, "cost": 64.081747, "requests": 224, "total_tokens": 26343577},
+    "tpm": 0
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "planName": "Free",
+  "billingStrategy": "quota",
+  "isDevinUser": true,
+  "duration": 0,
+  "startTimestamp": 0,
+  "endTimestamp": 0,
+  "remainingMessages": 1750,
+  "totalMessages": 2500,
+  "remainingFlexCredits": 0,
+  "dailyRemainingPercent": 100,
+  "weeklyRemainingPercent": 100,
+  "overageBalanceMicros": 0,
+  "dailyResetAtUnix": 1789372800,
+  "weeklyResetAtUnix": 1789891200,
+  "hideDailyQuota": false,
+  "hideWeeklyQuota": false,
+  "isFreeOrTrial": true,
+  "isDevinFree": true,
+  "teamsTier": 19
+}

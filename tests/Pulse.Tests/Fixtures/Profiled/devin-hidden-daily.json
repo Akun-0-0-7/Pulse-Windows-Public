@@ -1,0 +1,13 @@
+{
+  "planName": "Team",
+  "billingStrategy": "quota",
+  "remainingMessages": -1,
+  "totalMessages": -1,
+  "dailyRemainingPercent": 100,
+  "weeklyRemainingPercent": 42,
+  "overageBalanceMicros": 2500000,
+  "dailyResetAtUnix": 1789372800,
+  "weeklyResetAtUnix": 1789891200,
+  "hideDailyQuota": true,
+  "hideWeeklyQuota": false
+}

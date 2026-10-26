@@ -1,0 +1,1 @@
+<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><AssemblyName>Pulse-cli</AssemblyName></PropertyGroup><ItemGroup><ProjectReference Include="../Pulse.Core/Pulse.Core.csproj" /></ItemGroup></Project>

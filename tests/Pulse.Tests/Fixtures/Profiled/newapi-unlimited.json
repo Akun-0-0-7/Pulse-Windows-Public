@@ -1,0 +1,8 @@
+{
+  "object": "billing_subscription",
+  "has_payment_method": true,
+  "soft_limit_usd": 100000000,
+  "hard_limit_usd": 100000000,
+  "system_hard_limit_usd": 100000000,
+  "access_until": 1790000000
+}

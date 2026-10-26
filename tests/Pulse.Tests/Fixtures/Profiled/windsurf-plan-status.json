@@ -1,0 +1,4 @@
+{
+  "_note": "GetPlanStatus reply, protobuf, base64. Second-hand: built from the field numbers in CodexBar's Windsurf provider and the values in its tests; not captured from a live account.",
+  "base64": "CjcKBwgCEgNQcm8SBgiAvMPOBhoGCIDW4c8GUgIIAWABcER4VIgB4LPizwaQAYDB6M8GnQEAAIA/EAc="
+}

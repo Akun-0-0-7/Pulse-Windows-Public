@@ -1,0 +1,21 @@
+{
+  "userId": "redacted",
+  "quotaKey": "big_model_credits",
+  "totalQuota": {
+    "quotaSummary": {
+      "usedValue": 0,
+      "limitValue": 0,
+      "remainingValue": 0,
+      "unit": "credit"
+    },
+    "quotaDetail": []
+  },
+  "sharedQuota": {
+    "quotaSummary": {
+      "usedValue": 0,
+      "limitValue": 0,
+      "remainingValue": 0,
+      "unit": "credit"
+    }
+  }
+}
