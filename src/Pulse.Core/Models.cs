@@ -88,6 +88,7 @@ public sealed class AppConfig
     public string? PanelShortcut { get; set; }
     public string? UpdateManifestUrl { get; set; }
     public List<string> SpendPaths { get; set; } = [];
+    public string? CodexSpendHome { get; set; }
     public List<string> EnabledExtensions { get; set; } = [];
     public bool WindowStarterEnabled { get; set; }
     public int WindowStarterStartHour { get; set; } = 9;

@@ -38,6 +38,7 @@ internal static partial class Program
         var data=Path.Combine(output,"synthetic-data");Environment.SetEnvironmentVariable("PULSE_DATA_DIR",data);var storage=new AppStorage(data);var account=new AccountConfig{Id="primary-demo",ProviderId="codex",Enabled=true,Detailed=true};storage.SaveConfig(new AppConfig{Accounts=[account]});
         storage.SaveCache([new(){AccountId=account.Id,ProviderId="codex",Plan="cached-plan",ObservedAt=DateTimeOffset.UtcNow,ErrorCode="unreachable",ErrorMessage="cached-connection-error"}]);
         var app=new PulseApp();account=app.Engine.Config.Accounts[0];
+        if(args.Contains("--spend-home-only")){CodexSpendDirectoryChecks(app);app.Shutdown();return 0;}
         if(args.Contains("--appearance-only")){AppearanceColorChecks(app);app.Shutdown();return 0;}
         if(args.Contains("--starter-only")){WindowStarterRecoveryChecks(app);app.Shutdown();return 0;}
         if(args.Contains("--visual-only")){PulseShapeChecks.Run();VisualParityChecks(app,output);return 0;}
@@ -79,6 +80,7 @@ internal static partial class Program
         }
         AutoCollapseChecks(app);
         AppearanceColorChecks(app);
+        CodexSpendDirectoryChecks(app);
         RailMotionMathChecks.Run();
         MotionChecks(app,output,args.Contains("--render"));
         PulseShapeChecks.Run();
