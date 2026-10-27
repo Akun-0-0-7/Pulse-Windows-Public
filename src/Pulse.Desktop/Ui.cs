@@ -31,6 +31,7 @@ public static partial class Ui
         accentText.Color=customSurfaces||customAccent?Brush(AppearancePalette.Foreground(AppearancePalette.AppAccent(config))).Color:background.Color;
         selectorText.Color=Brush(AppearancePalette.Foreground(AppearancePalette.AppSurface(config))).Color;
         selectorHighlight.Color=SelectionSurface(card.Color,accent.Color,selectorText.Color);
+        UpdateScrollBrushes();
     }
     private static Color CommonForeground(Color page,Color surface,bool secondary)
     {

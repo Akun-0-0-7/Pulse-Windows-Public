@@ -65,6 +65,17 @@ internal static partial class Program
             CheckColor("#2468AC",Field<Color>(rail,"closedColor"),"Fixed collapsed color");
             dockMode.SelectedValue="跟随额度";
             CheckColor(AppearancePalette.Quota(config,80),Field<Color>(rail,"closedColor"),"Disabled cached account cannot override quota color");
+            var hiddenWeekly=new UsageWindow{Id="hidden-weekly",Kind="weekly",UsedPercent=100,Exhausted=true};
+            reading.Windows.Add(hiddenWeekly);account.PrimaryWindowId="quota";
+            try
+            {
+                rail.Render();
+                CheckColor(AppearancePalette.Quota(config,80),Field<Color>(rail,"closedColor"),"Collapsed rail follows displayed five-hour quota despite hidden weekly exhaustion");
+                account.PrimaryWindowId=hiddenWeekly.Id;rail.Render();
+                CheckColor(AppearancePalette.Quota(config,100,true),Field<Color>(rail,"closedColor"),"Collapsed rail follows weekly exhaustion only when weekly is displayed");
+                if(!Field<bool>(rail,"collapsed"))throw new System.Exception("Changing the displayed quota color expanded the collapsed rail.");
+            }
+            finally{reading.Windows.Remove(hiddenWeekly);account.PrimaryWindowId=null;rail.Render();}
             Edit("RailBackground","#112233");CheckColor("#112233",Field<Color>(rail,"expandedColor"),"Expanded background updates live");
             Invoke(rail,"SetRailCollapsed",false);RunFor(650);SetMouseOver(rail,true);
             var tile=Field<StackPanel>(rail,"rings").Children.OfType<FrameworkElement>().First();Invoke(rail,"ShowDetail",account,tile);RunFor(50);

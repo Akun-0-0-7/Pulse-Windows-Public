@@ -11,6 +11,8 @@ public sealed partial class SettingsWindow : Window
     private readonly DispatcherTimer statusRefresh=new(){Interval=TimeSpan.FromMinutes(5)};
     public SettingsWindow(PulseApp app)
     {
+        Ui.StyleSettingsScrollBars(this);
+        SettingsChrome.Attach(this);
         this.app=app;Title=Localization.Translate("Pulse · 设置");Width=1100;Height=790;MinWidth=850;MinHeight=580;Background=Ui.Bg;Foreground=Ui.Text;FontFamily=new FontFamily("Microsoft YaHei UI");WindowStartupLocation=WindowStartupLocation.CenterScreen;
         var layout=new Grid{Background=Ui.Bg};TextOptions.SetTextFormattingMode(layout,TextFormattingMode.Display);layout.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(230)});layout.ColumnDefinitions.Add(new ColumnDefinition());
         var left=new DockPanel {Background=Ui.Card,Margin=new Thickness(0,0,1,0)};
