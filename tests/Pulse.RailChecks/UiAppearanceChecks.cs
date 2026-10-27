@@ -36,11 +36,15 @@ internal static class UiAppearanceChecks
             throw new Exception("Existing fields and labels stopped using the live palette.");
         if(field.Text!="kept value"||choice.SelectedValue as string!="dark")
             throw new Exception("Applying a palette changed editor content or selection.");
-        if(!ReferenceEquals(choice.Background,Ui.Card)||!ReferenceEquals(choice.Foreground,Ui.Text)||!ReferenceEquals(choice.BorderBrush,Ui.BorderBrush))
+        if(!ReferenceEquals(choice.Background,Ui.Card)||!ReferenceEquals(choice.BorderBrush,Ui.BorderBrush))
             throw new Exception("ComboBox does not follow the application palette.");
+        ContrastAtLeast(choice.Foreground,Ui.Card,4.5,"ComboBox text on its own surface");
         foreach(ComboBoxItem option in choice.Items)
-            if(!ReferenceEquals(option.Background,Ui.Card)||!ReferenceEquals(option.Foreground,Ui.Text)||!ReferenceEquals(option.BorderBrush,Ui.BorderBrush))
+        {
+            if(!ReferenceEquals(option.Background,Ui.Card)||!ReferenceEquals(option.BorderBrush,Ui.BorderBrush))
                 throw new Exception("ComboBox option does not follow the application palette.");
+            ContrastAtLeast(option.Foreground,Ui.Card,4.5,"ComboBox item text on its own surface");
+        }
         ContrastAtLeast(Ui.Text,Ui.Bg,7,"Custom light application text");
         ContrastAtLeast(Ui.Text,Ui.Card,7,"Custom light card text");
         ContrastAtLeast(Ui.Muted,Ui.Bg,4.5,"Custom light muted text");
