@@ -16,7 +16,7 @@ public sealed partial class SettingsWindow
         ColorSection("贴边悬浮条与详情卡");
         AddColorChoice("收起条配色","DockColorMode",[("usage","跟随额度"),("fixed","固定颜色")],colors.DockColorMode,value=>colors.DockColorMode=value);
         AddColor("收起条颜色","DockColor",()=>colors.DockColor,value=>colors.DockColor=value,()=>AppearancePalette.Resolve(null,config.Theme=="light"?"#202335":"#FFFFFF"));
-        page.Children.Add(Ui.Label("跟随额度时取已启用账号中最高的已用比例；无有效读数时使用收起条颜色。",12,Ui.Muted));
+        page.Children.Add(Ui.Label("跟随额度时只看各账号圆环当前显示的窗口，再取最高已用比例；无有效读数时使用收起条颜色。",12,Ui.Muted));
         AddColor("悬浮条背景色","RailBackground",()=>colors.RailBackground,value=>colors.RailBackground=value,()=>config.Theme=="light"?"#F5F6FA":"#000000");
         AddColor("详情卡背景色","DetailBackground",()=>colors.DetailBackground,value=>colors.DetailBackground=value,()=>config.Theme=="light"?"#FFFFFF":"#000000");
 

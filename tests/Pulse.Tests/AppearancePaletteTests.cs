@@ -152,7 +152,7 @@ public static class AppearancePaletteTests
         config.Appearance=null!;Assert.Equal((75d,90d),AppearancePalette.Thresholds(config));
     }
 
-    [Check] public static void DockUsesHighestEnabledUsableWindowAndIgnoresAccountAndRemainingColors()
+    [Check] public static void DockUsesHighestEnabledDisplayedWindowAndIgnoresAccountAndRemainingColors()
     {
         var config=new AppConfig{Accounts=[new(){Id="one",ProviderId="codex",Enabled=true,AccentColor="#123456"},new(){Id="two",ProviderId="claudeCode",Enabled=true},new(){Id="disabled",ProviderId="codex",Enabled=false}]};
         var usable=Reading("one","codex",10);usable.Windows.Add(new(){UsedPercent=80});
@@ -191,7 +191,7 @@ public static class AppearancePaletteTests
         Assert.Equal("#FFFFFF",AppearancePalette.Dock(config,[Reading("one","codex",0),invalidExhausted]));
     }
 
-    [Check] public static void DockPromotesAnyUsableExhaustedWindowAboveHigherUnexhaustedUsage()
+    [Check] public static void DockPromotesDisplayedExhaustedWindowAboveHigherUnexhaustedUsage()
     {
         var config=new AppConfig{Accounts=[new(){Id="one",ProviderId="codex",Enabled=true},new(){Id="two",ProviderId="claudeCode",Enabled=true}]};
         var exhausted=Reading("one","codex",10);exhausted.Windows[0].Exhausted=true;
@@ -203,6 +203,80 @@ public static class AppearancePaletteTests
         exhausted.IsStale=false;config.Accounts[0].Enabled=false;Assert.Equal("#FFB339",AppearancePalette.Dock(config,[exhausted,warning]));
         config.Accounts[0].Enabled=true;config.Appearance.QuotaColorMode="fixed";config.Appearance.QuotaNormal="#123456";
         Assert.Equal("#123456",AppearancePalette.Dock(config,[exhausted,warning]));
+    }
+
+    [Check] public static void DockFollowsExplicitPrimaryWindowInsteadOfHiddenWeeklyExhaustion()
+    {
+        var account=new AccountConfig{Id="one",ProviderId="codex",Enabled=true,PrimaryWindowId="five"};
+        var config=new AppConfig{Accounts=[account]};
+        var five=new UsageWindow{Id="five",Kind="fiveHour",UsedPercent=20};
+        var weekly=new UsageWindow{Id="weekly",Kind="weekly",UsedPercent=100,Exhausted=true};
+        var reading=new UsageReading{AccountId="one",ProviderId="codex",Windows=[five,weekly]};
+        Assert.True(ReferenceEquals(five,UsageEngine.Headline(account,reading)));
+        Assert.Equal("#FFFFFF",AppearancePalette.Dock(config,[reading]));
+        config.ShowRemaining=false;Assert.Equal("#FFFFFF",AppearancePalette.Dock(config,[reading]));
+        five.UsedPercent=80;Assert.Equal("#FFB339",AppearancePalette.Dock(config,[reading]));
+        account.PrimaryWindowId="weekly";Assert.Equal("#EF1630",AppearancePalette.Dock(config,[reading]));
+        account.PrimaryWindowId="five";five.UsedPercent=20;
+        config.Appearance.QuotaColorMode="gradient";
+        Assert.Equal(AppearancePalette.Quota(config,20),AppearancePalette.Dock(config,[reading]));
+    }
+
+    [Check] public static void DockAutomaticAndMissingPrimaryKeepTheExistingHeadlineChoice()
+    {
+        var account=new AccountConfig{Id="one",ProviderId="codex",Enabled=true};
+        var config=new AppConfig{Accounts=[account]};
+        var five=new UsageWindow{Id="five",Kind="fiveHour",UsedPercent=80};
+        var weekly=new UsageWindow{Id="weekly",Kind="weekly",UsedPercent=5,Exhausted=true};
+        var reading=new UsageReading{AccountId="one",ProviderId="codex",Windows=[five,weekly]};
+        foreach(var primary in new string?[]{null,"missing-window"})
+        {
+            account.PrimaryWindowId=primary;
+            Assert.True(ReferenceEquals(five,UsageEngine.Headline(account,reading)));
+            Assert.Equal("#FFB339",AppearancePalette.Dock(config,[reading]));
+            weekly.UsedPercent=95;
+            Assert.True(ReferenceEquals(weekly,UsageEngine.Headline(account,reading)));
+            Assert.Equal("#EF1630",AppearancePalette.Dock(config,[reading]));
+            weekly.UsedPercent=5;
+        }
+    }
+
+    [Check] public static void DockAggregatesOnlyDisplayedWindowsAcrossEnabledMatchingAccounts()
+    {
+        var one=new AccountConfig{Id="one",ProviderId="codex",Enabled=true,PrimaryWindowId="five"};
+        var two=new AccountConfig{Id="two",ProviderId="claudeCode",Enabled=true,PrimaryWindowId="session"};
+        var config=new AppConfig{Accounts=[one,two]};
+        var first=new UsageReading{AccountId="one",ProviderId="codex",Windows=[new(){Id="five",UsedPercent=20},new(){Id="weekly",UsedPercent=100,Exhausted=true}]};
+        var second=new UsageReading{AccountId="two",ProviderId="claudeCode",Windows=[new(){Id="session",UsedPercent=80},new(){Id="weekly",UsedPercent=100,Exhausted=true}]};
+        Assert.Equal("#FFB339",AppearancePalette.Dock(config,[first,second]));
+        Assert.Equal("#FFB339",AppearancePalette.Dock(config,[second,first]));
+        two.Enabled=false;Assert.Equal("#FFFFFF",AppearancePalette.Dock(config,[first,second]));
+        two.Enabled=true;two.PrimaryWindowId="weekly";Assert.Equal("#EF1630",AppearancePalette.Dock(config,[first,second]));
+        second.ProviderId="codex";Assert.Equal("#FFFFFF",AppearancePalette.Dock(config,[first,second]));
+        config.Appearance.DockColorMode="fixed";config.Appearance.DockColor="#123456";
+        Assert.Equal("#123456",AppearancePalette.Dock(config,[first,second]));
+    }
+
+    [Check] public static void DockRejectsAnInvalidDisplayedWindowWithoutBorrowingHiddenUsage()
+    {
+        var account=new AccountConfig{Id="one",ProviderId="codex",Enabled=true,PrimaryWindowId="five"};
+        var config=new AppConfig{Accounts=[account],Appearance=new(){DockColor="#123456"}};
+        var five=new UsageWindow{Id="five",UsedPercent=20};
+        var weekly=new UsageWindow{Id="weekly",UsedPercent=95,Exhausted=true};
+        var reading=new UsageReading{AccountId="one",ProviderId="codex",Windows=[five,weekly]};
+        foreach(var invalid in new[]{-1d,double.NaN,double.NegativeInfinity,double.PositiveInfinity})
+        {
+            five.UsedPercent=invalid;
+            Assert.Equal("#123456",AppearancePalette.Dock(config,[reading]));
+            five.Exhausted=true;Assert.Equal("#123456",AppearancePalette.Dock(config,[reading]));five.Exhausted=false;
+        }
+        five.UsedPercent=double.PositiveInfinity;account.PrimaryWindowId=null;
+        Assert.True(ReferenceEquals(five,UsageEngine.Headline(account,reading)));
+        Assert.Equal("#123456",AppearancePalette.Dock(config,[reading]));
+        account.PrimaryWindowId="five";five.UsedPercent=20;
+        reading.Windows=[null!,five,weekly];Assert.Equal("#FFFFFF",AppearancePalette.Dock(config,[reading]));
+        reading.Windows=[null!];Assert.Equal("#123456",AppearancePalette.Dock(config,[reading]));
+        reading.Windows=null!;Assert.Equal("#123456",AppearancePalette.Dock(config,[reading]));
     }
 
     [Check] public static void AppearanceOverridesRoundTripAndSignatureTracksOnlyAppearanceAndTheme()

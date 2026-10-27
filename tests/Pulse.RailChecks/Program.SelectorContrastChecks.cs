@@ -66,9 +66,14 @@ internal static partial class Program
                 if(callbackCount!=0||choice.SelectedValue as string!="first-choice"||(string?)first.Tag!="first-choice"||(string?)second.Tag!="second-choice")
                     throw new Exception(name+": changing palette or opening the popup changed a persistent value or invoked its callback.");
             }
+            var downModifiers=Keyboard.Modifiers;var downFocus=Keyboard.FocusedElement?.GetType().Name??"none";
+            var downChoiceFocus=choice.IsKeyboardFocusWithin;var downOpen=choice.IsDropDownOpen;
             SelectorKey(choice,Key.Down);RunFor(20);
             if(callbackCount!=1||callbackValue!="second-choice"||choice.SelectedValue as string!="second-choice")
-                throw new Exception("Selector Down key did not preserve its stable Tag value and single callback.");
+                throw new Exception("Selector Down key did not preserve its stable Tag value and single callback. expected callbacks=1, callbackValue=second-choice, selectedValue=second-choice; "
+                    +$"actual callbacks={callbackCount}, callbackValue={callbackValue??"none"}, selectedValue={choice.SelectedValue as string??"none"}, "
+                    +$"dropDownOpen={choice.IsDropDownOpen}, modifiers={Keyboard.Modifiers}, focusedElement={Keyboard.FocusedElement?.GetType().Name??"none"}, choiceFocus={choice.IsKeyboardFocusWithin}; "
+                    +$"beforeKey modifiers={downModifiers}, focusedElement={downFocus}, choiceFocus={downChoiceFocus}, dropDownOpen={downOpen}.");
             var toggle=SelectorVisuals(choice).OfType<ToggleButton>().Single();
             toggle.SetCurrentValue(ToggleButton.IsCheckedProperty,true);RunFor(20);
             if(!choice.IsDropDownOpen)throw new Exception("Selector toggle did not open the popup through its two-way binding.");

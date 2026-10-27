@@ -38,6 +38,16 @@ internal static partial class Program
         var data=Path.Combine(output,"synthetic-data");Environment.SetEnvironmentVariable("PULSE_DATA_DIR",data);var storage=new AppStorage(data);var account=new AccountConfig{Id="primary-demo",ProviderId="codex",Enabled=true,Detailed=true};storage.SaveConfig(new AppConfig{Accounts=[account]});
         storage.SaveCache([new(){AccountId=account.Id,ProviderId="codex",Plan="cached-plan",ObservedAt=DateTimeOffset.UtcNow,ErrorCode="unreachable",ErrorMessage="cached-connection-error"}]);
         var app=new PulseApp();account=app.Engine.Config.Accounts[0];
+        if(args.Contains("--settings-chrome-only"))
+        {
+            try{SettingsChromeChecks(app);app.Shutdown();return 0;}
+            catch(Exception exception){Console.WriteLine("FAIL: "+exception);app.Shutdown();return 1;}
+        }
+        if(args.Contains("--scrollbars-only"))
+        {
+            try{ScrollbarContrastChecks(app);app.Shutdown();return 0;}
+            catch(Exception exception){Console.WriteLine("FAIL: "+exception);app.Shutdown();return 1;}
+        }
         if(args.Contains("--selectors-only"))
         {
             try{SelectorContrastChecks(app);app.Shutdown();return 0;}
@@ -87,6 +97,8 @@ internal static partial class Program
         AutoCollapseChecks(app);
         AppearanceColorChecks(app);
         SelectorContrastChecks(app);
+        ScrollbarContrastChecks(app);
+        SettingsChromeChecks(app);
         CodexSpendDirectoryChecks(app);
         UpdateSettingsChecks(app);
         RailMotionMathChecks.Run();

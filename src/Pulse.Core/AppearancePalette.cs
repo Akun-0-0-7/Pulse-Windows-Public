@@ -71,13 +71,20 @@ public static class AppearancePalette
     {
         var neutral=Resolve(Settings(config).DockColor,ThemeForeground(config));
         if(Settings(config).DockColorMode=="fixed")return neutral;
-        var enabled=(config.Accounts??[]).Where(account=>account is not null&&account.Enabled).Select(account=>(account.Id,account.ProviderId)).ToHashSet();
+        var enabled=(config.Accounts??[]).Where(account=>account is not null&&account.Enabled).ToLookup(account=>(account.Id,account.ProviderId));
         double? highest=null;var exhausted=false;
         foreach(var reading in readings??[])
         {
-            if(reading is null||!enabled.Contains((reading.AccountId,reading.ProviderId))||reading.IsStale||!string.IsNullOrWhiteSpace(reading.ErrorCode)||!string.IsNullOrWhiteSpace(reading.ErrorMessage))continue;
-            foreach(var window in reading.Windows??[])
+            if(reading is null||!enabled.Contains((reading.AccountId,reading.ProviderId))||reading.IsStale||!string.IsNullOrWhiteSpace(reading.ErrorCode)||!string.IsNullOrWhiteSpace(reading.ErrorMessage)||reading.Windows is null)continue;
+            // Match the ring's existing Headline choice. Only corrupt null list
+            // entries are removed; invalid percentages remain selected and are
+            // rejected below rather than falling back to an undisplayed window.
+            var displayReading=reading.Windows.Any(window=>window is null)
+                ?new UsageReading{Windows=reading.Windows.Where(window=>window is not null).ToList()}
+                :reading;
+            foreach(var account in enabled[(reading.AccountId,reading.ProviderId)])
             {
+                var window=UsageEngine.Headline(account,displayReading);
                 if(window is null||!double.IsFinite(window.UsedPercent)||window.UsedPercent<0)continue;
                 var effectiveUsed=window.Exhausted?Math.Max(100,window.UsedPercent):window.UsedPercent;
                 if(highest is null||effectiveUsed>highest||(effectiveUsed==highest&&window.Exhausted))
