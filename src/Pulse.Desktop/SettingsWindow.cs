@@ -22,7 +22,7 @@ public sealed partial class SettingsWindow : Window
     {
         sidebar.Children.Clear();
         foreach(var entry in new (string id,string title)[]{("dashboard","用量总览"),("accounts","服务与账号"),("appearance","外观与圆环"),("position","位置与行为"),("general","通用与快捷键"),("notifications","通知提醒"),("network","网络与刷新"),("spend","Token 消耗"),("reports","用量报告"),("status","服务状态"),("diagnostics","连接诊断"),("extensions","扩展"),("integrations","开发者集成"),("about","关于与更新")}) {
-            if(filter.Length>0&&!entry.title.Contains(filter,StringComparison.OrdinalIgnoreCase))continue;var id=entry.id;var button=Ui.Button(entry.title,()=>Navigate(id));button.HorizontalContentAlignment=HorizontalAlignment.Left;button.Margin=new Thickness(12,0,12,5);button.BorderThickness=new Thickness(0);if(current==id)button.Background=Ui.Brush("#343146");sidebar.Children.Add(button);
+            if(filter.Length>0&&!entry.title.Contains(filter,StringComparison.OrdinalIgnoreCase))continue;var id=entry.id;var button=Ui.Button(entry.title,()=>Navigate(id));button.HorizontalContentAlignment=HorizontalAlignment.Left;button.Margin=new Thickness(12,0,12,5);button.BorderThickness=new Thickness(0);if(current==id)button.Background=Ui.Selection;sidebar.Children.Add(button);
         }
         if(app.Engine.Config.Accounts.Count>0)sidebar.Children.Add(Ui.Label("账号",11,Ui.Muted));
         foreach(var account in app.Engine.Config.Accounts.Where(a=>a.Enabled)) {var label=app.AccountName(account.Id);if(filter.Length>0&&!label.Contains(filter,StringComparison.OrdinalIgnoreCase))continue;var id=account.Id;var button=Ui.Button(label,()=>Navigate("account:"+id));button.Margin=new Thickness(12,0,12,5);button.HorizontalContentAlignment=HorizontalAlignment.Left;button.BorderThickness=new Thickness(0);sidebar.Children.Add(button);}
@@ -40,7 +40,7 @@ public sealed partial class SettingsWindow : Window
     {
         UpdateStatus();
         if(current=="dashboard"&&!app.Engine.IsRefreshing){page.Children.Clear();Dashboard();}
-        else if(accountReading is not null&&current.StartsWith("account:")&&app.Engine.Config.Accounts.FirstOrDefault(a=>a.Id==current[8..]) is {} account){accountReading.Child=RailWindow.DetailContent(app,account);if(windowStarterStatus is not null)windowStarterStatus.Text=app.WindowStarterStatus(account.Id);if(windowStarterRetryButton is not null)windowStarterRetryButton.IsEnabled=app.CanRetryWindowStarter(account.Id);}
+        else if(accountReading is not null&&current.StartsWith("account:")&&app.Engine.Config.Accounts.FirstOrDefault(a=>a.Id==current[8..]) is {} account){accountReading.Child=RailWindow.DetailContent(app,account,true);if(windowStarterStatus is not null)windowStarterStatus.Text=app.WindowStarterStatus(account.Id);if(windowStarterRetryButton is not null)windowStarterRetryButton.IsEnabled=app.CanRetryWindowStarter(account.Id);}
     }
     public void RefreshPage()=>Navigate(current);
     public void UpdateShortcutStatus(){if(current=="general"&&shortcutStatus is not null)shortcutStatus.Text=string.Join(Environment.NewLine,app.Rail?.ShortcutErrors.Select(Localization.Translate)??[]);}
@@ -60,7 +60,7 @@ public sealed partial class SettingsWindow : Window
     private void Dashboard()
     {
         Header("用量总览","所有读数来自对应服务；详情显示数据来源和读取时间。");var accounts=app.Engine.Config.Accounts.Where(a=>a.Enabled).ToList();if(accounts.Count==0){page.Children.Add(Ui.Button("选择服务",()=>Navigate("onboarding"),true));return;}
-        foreach(var account in accounts){var content=RailWindow.DetailContent(app,account);content.Width=double.NaN;page.Children.Add(Ui.Box(content));}
+        foreach(var account in accounts){var content=RailWindow.DetailContent(app,account,true);content.Width=double.NaN;page.Children.Add(Ui.Box(content));}
         page.Children.Add(Ui.Button("刷新全部",()=>_=app.Engine.RefreshAsync(),true));
     }
     private void Accounts()
@@ -105,7 +105,7 @@ public sealed partial class SettingsWindow : Window
             page.Children.Add(Ui.Label("超时或中断时，请先查看额度；手动重试可能重复已被服务商接收的请求。自动发送遵守允许时段，手动重试可随时进行。",12,Ui.Muted));
         }
         var reading=app.Engine.Reading(id);if(reading?.Windows.Count>0)AddSelect("圆环主额度",new[]{"automatic"}.Concat(reading.Windows.Select(w=>w.Id)),account.PrimaryWindowId??"automatic",text=>account.PrimaryWindowId=text=="automatic"?null:text);
-        accountReading=Ui.Box(RailWindow.DetailContent(app,account));page.Children.Add(accountReading);
+        accountReading=Ui.Box(RailWindow.DetailContent(app,account,true));page.Children.Add(accountReading);
         var actions=new WrapPanel();if(!string.IsNullOrWhiteSpace(definition?.HelpUrl))actions.Children.Add(Ui.Button("设置帮助",()=>WindowsServices.Open(definition.HelpUrl)));if(!string.IsNullOrWhiteSpace(definition?.UsageUrl))actions.Children.Add(Ui.Button("服务商用量页面",()=>WindowsServices.Open(definition.UsageUrl)));
         actions.Children.Add(Ui.Button("向上移动",()=>{var index=app.Engine.Config.Accounts.IndexOf(account);if(index>0){app.Engine.Config.Accounts.RemoveAt(index);app.Engine.Config.Accounts.Insert(index-1,account);app.Save();}}));actions.Children.Add(Ui.Button("移除账号",async()=>{account.Enabled=false;await app.ClearCredentialsAsync(account);app.Engine.Config.Accounts.Remove(account);app.Save();Navigate("accounts");}));page.Children.Add(actions);
     }

@@ -3,11 +3,11 @@ namespace Pulse.Desktop;
 internal static class RailCard
 {
     public static double Scale(AppConfig config)=>Math.Clamp(config.RingSize/36,.5,3);
-    public static Brush Foreground(AppConfig config)=>config.Theme=="light"?Ui.Text:Brushes.White;
-    public static Brush Secondary(AppConfig config)=>config.Theme=="light"?Ui.Muted:Ui.Brush("#73FFFFFF");
-    public static StackPanel Content(PulseApp app,AccountConfig account)
+    public static Brush Foreground(AppConfig config,bool inSettings=false)=>RailColors.Foreground(config,true,inSettings);
+    public static Brush Secondary(AppConfig config,bool inSettings=false)=>RailColors.Secondary(config,true,inSettings);
+    public static StackPanel Content(PulseApp app,AccountConfig account,bool inSettings=false)
     {
-        var config=app.Engine.Config;var s=Scale(config);var white=Foreground(config);var muted=Secondary(config);
+        var config=app.Engine.Config;var s=Scale(config);var white=Foreground(config,inSettings);var muted=Secondary(config,inSettings);
         var panel=new StackPanel{Width=(account.Detailed?310:214)*s};
         var header=new Grid{Height=19*s,Margin=new Thickness(0,0,0,14*s)};
         header.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});header.ColumnDefinitions.Add(new ColumnDefinition());
@@ -25,9 +25,9 @@ internal static class RailCard
             {
                 var row=new StackPanel{Margin=new Thickness(0,0,0,reading.Windows.Count>1?14*s:0)};
                 row.Children.Add(new TextBlock{Text=window.Label??(window.Kind=="weekly"?Localization.Translate("每周限额"):Ui.WindowName(window)),FontSize=11.5*s,Foreground=white,Height=14*s,Margin=new Thickness(0,0,0,7*s)});
-                row.Children.Add(new Meter(window.UsedPercent,config.SegmentedBars,config.Theme=="light"){Height=6*s,Margin=new Thickness(0,0,0,7*s)});
+                row.Children.Add(new Meter(window.UsedPercent,config,account.AccentColor,window.Exhausted,inSettings){Tag="quota-meter",Height=6*s,Margin=new Thickness(0,0,0,7*s)});
                 var footer=new Grid{Height=14*s};footer.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});footer.ColumnDefinitions.Add(new ColumnDefinition());
-                var used=new TextBlock{Text=Localization.Format("已用 {0}%",UsageFigures.Percent(window.UsedPercent)),Foreground=config.Theme=="light"?white:Ui.Brush("#E6FFFFFF"),FontSize=11.5*s};footer.Children.Add(used);
+                var used=new TextBlock{Text=Localization.Format("已用 {0}%",UsageFigures.Percent(window.UsedPercent)),Foreground=white,FontSize=11.5*s};footer.Children.Add(used);
                 var reset=new TextBlock{Text=Reset(window.ResetsAt),Foreground=muted,FontSize=11.5*s,HorizontalAlignment=HorizontalAlignment.Right};Grid.SetColumn(reset,1);footer.Children.Add(reset);row.Children.Add(footer);
                 if(window.Estimated)row.Children.Add(Label("按所选基准估算",10,muted));
                 panel.Children.Add(row);
@@ -38,15 +38,15 @@ internal static class RailCard
             if(account.Detailed)
             {
                 foreach(var metric in reading.Metrics)panel.Children.Add(Label($"{metric.Label}  {metric.Value:0.##} {metric.Unit}",11.5));
-                DetailCharts.AddHistory(panel,app,account,reading);
+                DetailCharts.AddHistory(panel,app,account,reading,white,muted);
                 if(reading.ObservedAt is {} at)panel.Children.Add(Label($"读取于 {at.ToLocalTime():MM-dd HH:mm:ss} · {reading.Source}",10,muted));
             }
             if(reading.ErrorMessage is {} error)panel.Children.Add(Label((reading.IsStale?"上次读数 · ":"")+error,11.5,Ui.Brush("#FFBA83")));
         }
         if(account.Detailed)
         {
-            if(LocalUsageCard.Create(app,account) is {} local)panel.Children.Add(local);
-            DetailCharts.AddCodex(panel,app,account);panel.Children.Add(Ui.Button("账号设置",()=>app.ShowSettings("account:"+account.Id)));
+            if(LocalUsageCard.Create(app,account,white,muted) is {} local)panel.Children.Add(local);
+            DetailCharts.AddCodex(panel,app,account,white,muted);panel.Children.Add(Ui.Button("账号设置",()=>app.ShowSettings("account:"+account.Id)));
         }
         return panel;
     }
@@ -61,16 +61,17 @@ internal static class RailCard
         var amount=balance.Amount.ToString("0.##",Localization.Culture);
         return balance.Currency.ToUpperInvariant() switch{"CNY" or "RMB"=>"¥"+amount,"USD"=>"$"+amount,"EUR"=>"€"+amount,"JPY"=>"¥"+amount,"GBP"=>"£"+amount,_=>amount+" "+balance.Currency};
     }
-    private sealed class Meter(double percent,bool segmented,bool light) : FrameworkElement
+    private sealed class Meter(double percent,AppConfig config,string? accountColor,bool exhausted,bool inSettings) : FrameworkElement
     {
+        public Brush FillBrush=>RailColors.Quota(config,percent,accountColor,exhausted,true,inSettings);
         protected override void OnRender(DrawingContext drawing)
         {
-            var color=percent>=90?Ui.Brush("#EF1630"):light?Ui.Text:Ui.Brush("#E6FFFFFF");
-            var track=light?Ui.BorderBrush:Ui.Brush("#2B2B2B");var bounds=new Rect(0,0,ActualWidth,ActualHeight);
+            var color=FillBrush;
+            var track=RailColors.Track(config,true,inSettings);var bounds=new Rect(0,0,ActualWidth,ActualHeight);
             drawing.DrawRoundedRectangle(track,null,bounds,ActualHeight/2,ActualHeight/2);
             drawing.PushClip(new RectangleGeometry(bounds,ActualHeight/2,ActualHeight/2));
             var value=double.IsFinite(percent)?Math.Clamp(percent,0,100)/100:0;
-            if(!segmented)drawing.DrawRectangle(color,null,new Rect(0,0,ActualWidth*value,ActualHeight));
+            if(!config.SegmentedBars)drawing.DrawRectangle(color,null,new Rect(0,0,ActualWidth*value,ActualHeight));
             else
             {
                 var fractions=UsageBar.FillFractions(percent);var step=ActualWidth/fractions.Length;

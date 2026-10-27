@@ -55,7 +55,7 @@ public static class DetailCharts
 {
     private static readonly HashSet<string> pending=[];
     public static event Action<string>? CodexUpdated;
-    public static void AddHistory(StackPanel panel,PulseApp app,AccountConfig account,UsageReading reading)
+    public static void AddHistory(StackPanel panel,PulseApp app,AccountConfig account,UsageReading reading,Brush? foreground=null,Brush? secondary=null)
     {
         if(!account.Detailed)return;
         var charts=new List<(string Label,string? Unit,IReadOnlyList<MetricPoint> Points)>();
@@ -64,23 +64,23 @@ public static class DetailCharts
         {
             if(charts.Count>=2)break;var points=app.History.Read(account.Id,window.Id);if(points.Count>0)charts.Add((Ui.WindowName(window),"%",points));
         }
-        if(charts.Count==0){panel.Children.Add(Ui.Label("开启详细卡片后，将在读取额度时积累本地趋势。",11,Ui.Muted));return;}
+        if(charts.Count==0){panel.Children.Add(Ui.Label("开启详细卡片后，将在读取额度时积累本地趋势。",11,secondary??Ui.Muted));return;}
         foreach(var chart in charts)
         {
             var points=chart.Points.Where(p=>double.IsFinite(p.V)).OrderBy(p=>p.T).ToArray();if(points.Length==0)continue;
-            panel.Children.Add(Ui.Label(chart.Label+" · "+Localization.Translate("历史趋势"),12,Ui.Muted));
-            panel.Children.Add(new MiniTrendChart(points){Margin=new Thickness(0,0,0,3)});
+            panel.Children.Add(Ui.Label(chart.Label+" · "+Localization.Translate("历史趋势"),12,secondary??Ui.Muted));
+            panel.Children.Add(new MiniTrendChart(points,foreground){Margin=new Thickness(0,0,0,3)});
             var range=points.Min(p=>p.V).ToString("0.##",Localization.Culture)+"–"+points.Max(p=>p.V).ToString("0.##",Localization.Culture)+" "+chart.Unit;
-            panel.Children.Add(Ui.Label($"{points[0].T.ToLocalTime():MM-dd HH:mm} → {points[^1].T.ToLocalTime():MM-dd HH:mm} · {range}",10,Ui.Muted));
+            panel.Children.Add(Ui.Label($"{points[0].T.ToLocalTime():MM-dd HH:mm} → {points[^1].T.ToLocalTime():MM-dd HH:mm} · {range}",10,secondary??Ui.Muted));
         }
     }
     public static bool IsPrimaryCodex(PulseApp app,AccountConfig account)=>account.ProviderId=="codex"&&app.UsesLocalLogin(account)&&app.Engine.Config.Accounts.FirstOrDefault(a=>a.Enabled&&a.ProviderId=="codex"&&a.Extra.GetValueOrDefault("isAdditionalAccount")!="true")?.Id==account.Id;
-    public static void AddCodex(StackPanel panel,PulseApp app,AccountConfig account)
+    public static void AddCodex(StackPanel panel,PulseApp app,AccountConfig account,Brush? foreground=null,Brush? secondary=null)
     {
         if(!account.Detailed||!IsPrimaryCodex(app,account))return;
         var key=Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(account.Id)))[..20];var file="codex-details-"+key+".json";
-        var details=new StackPanel();var cached=app.Storage.Load<CodexAccountDetails>(file);if(cached is not null)Present(cached,details);
-        var status=Ui.Label("仅在点击后，通过本机 Codex 工具读取账号历史与重置积分。",11,Ui.Muted);
+        var details=new StackPanel();var cached=app.Storage.Load<CodexAccountDetails>(file);if(cached is not null)Present(cached,details,foreground,secondary);
+        var status=Ui.Label("仅在点击后，通过本机 Codex 工具读取账号历史与重置积分。",11,secondary??Ui.Muted);
         var button=Ui.Button(pending.Contains(key)?"正在读取 Codex 历史…":"读取 Codex 账号历史",()=>{});button.IsEnabled=!pending.Contains(key);
         button.Click+=async(_,_)=>
         {
@@ -89,7 +89,7 @@ public static class DetailCharts
             {
                 var result=await CodexDetailsService.FetchAsync(account.Extra.GetValueOrDefault("executable"),app.Engine.LifetimeToken,ProxyEnvironment.For(app.Engine.Config));
                 if(result.Error is {} error){status.Text=Localization.Translate(error);return;}
-                if(!IsPrimaryCodex(app,account))return;app.Storage.Save(file,result);Present(result,details);status.Text=Localization.Translate("已读取本机 Codex 登录账号的历史。");
+                if(!IsPrimaryCodex(app,account))return;app.Storage.Save(file,result);Present(result,details,foreground,secondary);status.Text=Localization.Translate("已读取本机 Codex 登录账号的历史。");
             }
             catch(OperationCanceledException){status.Text=Localization.Translate("读取已取消");}
             catch(Exception exception)when(exception is JsonException or IOException or InvalidOperationException){status.Text=Localization.Translate("Codex 工具未提供账号历史或重置积分");}
@@ -97,13 +97,13 @@ public static class DetailCharts
         };
         panel.Children.Add(details);panel.Children.Add(button);panel.Children.Add(status);
     }
-    private static void Present(CodexAccountDetails value,StackPanel panel)
+    private static void Present(CodexAccountDetails value,StackPanel panel,Brush? foreground=null,Brush? secondary=null)
     {
-        panel.Children.Clear();panel.Children.Add(Ui.Label("Codex 账号历史",13,Ui.Accent));
-        if(value.LifetimeTokens is {} tokens)panel.Children.Add(Ui.Label("累计 Token  "+Ui.Compact(tokens),13));
-        if(value.ResetCredits is {} credits)panel.Children.Add(Ui.Label("可用额度重置积分  "+credits.ToString(CultureInfo.InvariantCulture),13));
-        if(value.NextExpiry is {} expires)panel.Children.Add(Ui.Label("最近积分到期  "+expires.ToLocalTime().ToString("yyyy-MM-dd HH:mm",Localization.Culture),11,Ui.Muted));
-        if(value.Days.Count>0){panel.Children.Add(Ui.Label("每日 Token",12,Ui.Muted));panel.Children.Add(new MiniTrendChart(value.Days.Select(d=>new MetricPoint(d.At,d.Tokens)).ToArray()));}
-        if(value.Days.Count==0&&value.LifetimeTokens is null&&value.ResetCredits is null)panel.Children.Add(Ui.Label("本机 Codex 工具没有返回历史数据。",11,Ui.Muted));
+        panel.Children.Clear();panel.Children.Add(Ui.Label("Codex 账号历史",13,foreground??Ui.Accent));
+        if(value.LifetimeTokens is {} tokens)panel.Children.Add(Ui.Label("累计 Token  "+Ui.Compact(tokens),13,foreground));
+        if(value.ResetCredits is {} credits)panel.Children.Add(Ui.Label("可用额度重置积分  "+credits.ToString(CultureInfo.InvariantCulture),13,foreground));
+        if(value.NextExpiry is {} expires)panel.Children.Add(Ui.Label("最近积分到期  "+expires.ToLocalTime().ToString("yyyy-MM-dd HH:mm",Localization.Culture),11,secondary??Ui.Muted));
+        if(value.Days.Count>0){panel.Children.Add(Ui.Label("每日 Token",12,secondary??Ui.Muted));panel.Children.Add(new MiniTrendChart(value.Days.Select(d=>new MetricPoint(d.At,d.Tokens)).ToArray(),foreground));}
+        if(value.Days.Count==0&&value.LifetimeTokens is null&&value.ResetCredits is null)panel.Children.Add(Ui.Label("本机 Codex 工具没有返回历史数据。",11,secondary??Ui.Muted));
     }
 }

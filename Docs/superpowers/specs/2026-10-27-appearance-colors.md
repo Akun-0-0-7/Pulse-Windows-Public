@@ -1,0 +1,11 @@
+# Adjustable application and quota colors
+
+Requested: adjustable colors for the docked rail, quota percentages and the application itself. Retain preview.3's motion, shape and hi recovery behavior.
+
+Expose three groups in Appearance: rail expanded background, detail background and collapsed dock color (fixed or follows quota); quota normal/warning/critical colors with fixed, threshold and smooth gradient modes and two editable used-percent thresholds; application background, card surface and accent. Provide native color picker, editable #RRGGBB, visible validation, per-setting default and whole-palette reset. Blank overrides follow existing theme defaults. Changes save only on valid commit/picker choice, never on each character, and update without reopening or resetting a collapsed rail.
+
+All quota surfaces use raw USED percentage, independently of showing remaining percentage. Default thresholds are 75% and 90%; defaults preserve the original dark normal white, amber warning and red danger. Account-specific colors retain priority for that account, with an explanatory note; collapsed aggregate follows the highest enabled usable reading and global quota palette. Exclude disabled, stale, erroneous or invalid readings from aggregate alarm color; unknown quota uses a neutral configured dock color.
+
+Keep light/dark/glass themes and old configs compatible. Parse RGB hex safely, fall back for invalid saved values/NaN/invalid thresholds, choose readable rail/detail foregrounds from their respective backgrounds, refresh detail color caches immediately. Shared software brushes update in place, selected sidebar follows accent, tray quota and detail meters share the chosen quota palette. Document report/export colors as outside this UI preference's scope; do not recolor exported documents. Preserve keyboard editing/focus while applying colors, and do not turn on any message automation.
+
+Test color rules/boundaries/gradient, invalid and missing config, persistence, remaining-mode consistency, enabled-only aggregate, account override, live theme brushes, rail/detail/compact meter cache updates and unchanged collapse/motion state. No real network or hi requests. Pixel rendering is unavailable in the current execution session; validate native control/brush state and interaction, report that limitation candidly.
