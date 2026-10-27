@@ -59,8 +59,8 @@ public sealed partial class RailWindow
         }
         foreach(var pair in accounts.Zip(rings.Children.OfType<RingTile>()))
             pair.Second.Update(app.Engine.Reading(pair.First.Id),ProviderCatalog.Find(pair.First.ProviderId),app.Engine.IsRefreshing,app.Activities.GetValueOrDefault(pair.First.Id));
-        expandedColor=config.Theme=="light"?((SolidColorBrush)Ui.Bg).Color:Colors.Black;
-        closedColor=((app.Engine.Readings.Any(r=>r.Windows.Any(w=>w.UsedPercent>=95))?Ui.Brush("#EF1630"):RailCard.Foreground(config)) as SolidColorBrush)?.Color??Colors.White;
+        expandedColor=Ui.Brush(AppearancePalette.RailBackground(config)).Color;
+        closedColor=Ui.Brush(AppearancePalette.Dock(config,app.Engine.Readings)).Color;
         UpdateRailGeometry(RailScreen.Resolve(config.PanelDisplay),true);RefreshDetail();
     }
     private void UpdateRailGeometry(System.Windows.Forms.Screen screen,bool queuePlacement)
@@ -151,7 +151,7 @@ public sealed partial class RailWindow
         if(detail is null||detailHost is null||detailAccountId is null)return;
         var account=app.Engine.Config.Accounts.FirstOrDefault(a=>a.Id==detailAccountId&&a.Enabled);if(account is null){CloseDetail(false);return;}
         var config=app.Engine.Config;var reading=app.Engine.Reading(account.Id);
-        var options=$"{account.Id}|{account.ProviderId}|{config.RingSize}|{account.Detailed}|{account.Label}|{config.SegmentedBars}|{config.Theme}|{config.Language}|{config.Currency}|{config.ManualExchangeRate}|{config.HideProjectNames}|{config.ForecastEnabled}|{app.Engine.Forecast(account.Id)}";
+        var options=$"{account.Id}|{account.ProviderId}|{config.RingSize}|{account.Detailed}|{account.Label}|{account.AccentColor}|{config.SegmentedBars}|{AppearancePalette.Signature(config)}|{config.Language}|{config.Currency}|{config.ManualExchangeRate}|{config.HideProjectNames}|{config.ForecastEnabled}|{app.Engine.Forecast(account.Id)}";
         if(!force&&ReferenceEquals(reading,detailReading)&&ReferenceEquals(app.LocalSpend,detailSpend)&&options==detailOptions)return;
         var sameAccount=detailOptions?.StartsWith(account.Id+"|",StringComparison.Ordinal)==true;var offset=sameAccount?detailScroll?.VerticalOffset??0:0;
         detailReading=reading;detailSpend=app.LocalSpend;detailOptions=options;
@@ -159,7 +159,7 @@ public sealed partial class RailWindow
         var scroll=new ScrollViewer{Content=content,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,HorizontalScrollBarVisibility=ScrollBarVisibility.Disabled};
         var side=config.DockEdge=="free"?detailBubble?.ArrowSide??"right":config.DockEdge;
         detailBubble??=new RailBubble();
-        detailBubble.Scale=RailCard.Scale(config);detailBubble.ArrowSide=side;detailBubble.Fill=config.Theme=="light"?Ui.Card:Brushes.Black;
+        detailBubble.Scale=RailCard.Scale(config);detailBubble.ArrowSide=side;detailBubble.Fill=RailColors.DetailBackground(config);
         detailBubble.Child=scroll;detailBubble.InvalidateVisual();
         detailScroll=scroll;detailHost.Child=detailBubble;detail.Title=app.AccountName(account.Id);
         Dispatcher.BeginInvoke(DispatcherPriority.Loaded,new Action(()=>{if(ReferenceEquals(detailScroll,scroll)){scroll.ScrollToVerticalOffset(offset);PlaceDetail();}}));

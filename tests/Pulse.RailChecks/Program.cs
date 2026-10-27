@@ -14,6 +14,7 @@ internal static partial class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        if(args.Contains("--ui-appearance-only")){UiAppearanceChecks.Run();return 0;}
         var area=new Rect(100,50,1000,700);
         var expanded=RailPlacement.Calculate(area,new Size(100,400),"right",null);
         var collapsed=RailPlacement.Calculate(area,new Size(8,120),"right",null);
@@ -37,6 +38,7 @@ internal static partial class Program
         var data=Path.Combine(output,"synthetic-data");Environment.SetEnvironmentVariable("PULSE_DATA_DIR",data);var storage=new AppStorage(data);var account=new AccountConfig{Id="primary-demo",ProviderId="codex",Enabled=true,Detailed=true};storage.SaveConfig(new AppConfig{Accounts=[account]});
         storage.SaveCache([new(){AccountId=account.Id,ProviderId="codex",Plan="cached-plan",ObservedAt=DateTimeOffset.UtcNow,ErrorCode="unreachable",ErrorMessage="cached-connection-error"}]);
         var app=new PulseApp();account=app.Engine.Config.Accounts[0];
+        if(args.Contains("--appearance-only")){AppearanceColorChecks(app);app.Shutdown();return 0;}
         if(args.Contains("--starter-only")){WindowStarterRecoveryChecks(app);app.Shutdown();return 0;}
         if(args.Contains("--visual-only")){PulseShapeChecks.Run();VisualParityChecks(app,output);return 0;}
         if(args.Contains("--motion-only")){RailMotionMathChecks.Run();MotionChecks(app,output,args.Contains("--render"));return 0;}
@@ -76,6 +78,7 @@ internal static partial class Program
             foreach(var entry in starterEnvironment)Environment.SetEnvironmentVariable(entry.Key,entry.Value);
         }
         AutoCollapseChecks(app);
+        AppearanceColorChecks(app);
         RailMotionMathChecks.Run();
         MotionChecks(app,output,args.Contains("--render"));
         PulseShapeChecks.Run();

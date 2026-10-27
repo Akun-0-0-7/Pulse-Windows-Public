@@ -64,7 +64,7 @@ public sealed partial class RailWindow : Window
     private void ShowDetail(AccountConfig account,FrameworkElement tile)=>OpenDetail(account,tile);
     private void RefreshDetail(bool force=false)=>UpdateDetailContent(force);
     private void PositionDetail()=>PlaceDetail();
-    public static StackPanel DetailContent(PulseApp app,AccountConfig account)=>RailCard.Content(app,account);
+    public static StackPanel DetailContent(PulseApp app,AccountConfig account,bool inSettings=false)=>RailCard.Content(app,account,inSettings);
     private void RememberPlacement()
     {
         var config=app.Engine.Config;config.PanelX=Left;config.PanelY=Top;var screen=System.Windows.Forms.Screen.FromHandle(new WindowInteropHelper(this).Handle);var scale=RailScreen.Scale(screen);var area=screen.WorkingArea;var rect=RailScreen.Bounds(this);
@@ -103,17 +103,17 @@ public sealed class RingTile(AccountConfig account,UsageReading? reading,Provide
     protected override void OnRender(DrawingContext drawing)
     {
         var s=RailCard.Scale(config);var size=36*s;var inset=config.ShowClock?10*s:0;var center=new Point(19*s,inset+18*s);var radius=18*s;
-        var window=UsageEngine.Headline(account,reading);var percent=window?.UsedPercent;var white=RailCard.Foreground(config);
-        var brush=account.AccentColor is {} color?Ui.Brush(color):percent>=90?Ui.Brush("#EF1630"):percent>=75?Ui.Brush("#FFB339"):white;
-        drawing.DrawEllipse(null,new Pen(config.Theme=="light"?Ui.BorderBrush:Ui.Brush("#282828"),4*s),center,radius,radius);
+        var window=UsageEngine.Headline(account,reading);var percent=window?.UsedPercent;var white=RailColors.Foreground(config);
+        var brush=RailColors.Quota(config,percent,account.AccentColor,window?.Exhausted==true);
+        drawing.DrawEllipse(null,new Pen(RailColors.Track(config),4*s),center,radius,radius);
         if(percent is {} value&&UsageFigures.Percent(value,config.ShowRemaining)>0)Arc(drawing,center,radius,Math.Clamp((config.ShowRemaining?100-value:value)/100,0,1),new Pen(brush,4*s){StartLineCap=PenLineCap.Round,EndLineCap=PenLineCap.Round});
-        if(config.ShowSecondaryRing&&reading?.Windows.Where(w=>w.Id!=window?.Id).OrderByDescending(w=>w.UsedPercent).FirstOrDefault() is {} second)Arc(drawing,center,radius-5*s,Math.Clamp(second.UsedPercent/100,.001,1),new Pen(RailCard.Secondary(config),s));
-        if(config.ShowClock&&window is {ReportsLength:true,ResetsAt:{} reset,WindowSeconds:>0}&&window.WindowSeconds is {} seconds)Arc(drawing,center,radius+4*s,Math.Clamp(1-(reset-DateTimeOffset.Now).TotalSeconds/seconds,.001,1),new Pen(RailCard.Secondary(config),s));
+        if(config.ShowSecondaryRing&&reading?.Windows.Where(w=>w.Id!=window?.Id).OrderByDescending(w=>w.UsedPercent).FirstOrDefault() is {} second)Arc(drawing,center,radius-5*s,Math.Clamp(second.UsedPercent/100,.001,1),new Pen(RailColors.Quota(config,second.UsedPercent,account.AccentColor,second.Exhausted),s));
+        if(config.ShowClock&&window is {ReportsLength:true,ResetsAt:{} reset,WindowSeconds:>0}&&window.WindowSeconds is {} seconds)Arc(drawing,center,radius+4*s,Math.Clamp(1-(reset-DateTimeOffset.Now).TotalSeconds/seconds,.001,1),new Pen(RailColors.Secondary(config),s));
         var initial=definition?.Name[..Math.Min(2,definition.Name.Length)]??"P";
         if(config.AnimatedMarks){var shape=int.TryParse(account.Extra.GetValueOrDefault("botBody"),out var body)?body:0;var personality=int.TryParse(account.Extra.GetValueOrDefault("botPersonality"),out var mood)?mood:0;BotRenderer.Draw(drawing,center,brush,window?.Exhausted==true?"spent":active?"working":fetching?"fetching":"quiet",Math.Clamp(shape,0,17),Math.Clamp(personality,0,7));}
         else if(!ProviderMark.Draw(drawing,account.ProviderId,new Rect(center.X-9*s,center.Y-9*s,18*s,18*s),white))Text(drawing,initial,new Point(center.X,center.Y-8*s),12*s,white,true);
         var label=percent is {} p?$"{UsageFigures.Percent(p,config.ShowRemaining)}%":reading?.Balance is {} money?RailCard.Balance(money):fetching?"···":"—";
-        Text(drawing,label,new Point(center.X,inset+42*s),13*s,percent>=90?brush:reading?.IsStale==true?RailCard.Secondary(config):white,true);
+        Text(drawing,label,new Point(center.X,inset+42*s),13*s,reading?.IsStale==true?RailColors.Secondary(config):percent is not null?brush:white,true);
         if(fetching||active){var angle=DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()/600d;drawing.DrawEllipse(white,null,new Point(center.X+radius*Math.Cos(angle),center.Y+radius*Math.Sin(angle)),2*s,2*s);}
     }
     private void Text(DrawingContext drawing,string text,Point point,double size,Brush brush,bool center){var formatted=new FormattedText(text,System.Globalization.CultureInfo.CurrentCulture,FlowDirection.LeftToRight,new Typeface(new FontFamily("Segoe UI"),FontStyles.Normal,FontWeights.SemiBold,FontStretches.Normal),size,brush,VisualTreeHelper.GetDpi(this).PixelsPerDip);drawing.DrawText(formatted,new Point(point.X-(center?formatted.Width/2:0),point.Y));}

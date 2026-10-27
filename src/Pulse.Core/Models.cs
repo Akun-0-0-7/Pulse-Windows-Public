@@ -19,6 +19,22 @@ public sealed class AccountConfig
     public Dictionary<string,string> Extra { get; set; } = [];
 }
 public sealed record PanelPlacement(string Edge,double X,double Y);
+public sealed class AppearanceSettings
+{
+    public string? AppBackground { get; set; }
+    public string? AppSurface { get; set; }
+    public string? AppAccent { get; set; }
+    public string? RailBackground { get; set; }
+    public string? DetailBackground { get; set; }
+    public string? DockColor { get; set; }
+    public string DockColorMode { get; set; } = "usage";
+    public string QuotaColorMode { get; set; } = "thresholds";
+    public string? QuotaNormal { get; set; }
+    public string? QuotaWarning { get; set; }
+    public string? QuotaCritical { get; set; }
+    public double WarningPercent { get; set; } = 75;
+    public double CriticalPercent { get; set; } = 90;
+}
 public sealed class AppConfig
 {
     public int SchemaVersion { get; set; } = 1;
@@ -26,6 +42,7 @@ public sealed class AppConfig
     public List<AccountConfig> Accounts { get; set; } = [];
     public string Language { get; set; } = "zh-CN";
     public string Theme { get; set; } = "dark";
+    public AppearanceSettings Appearance { get; set; } = new();
     public string Currency { get; set; } = "CNY";
     public decimal? ManualExchangeRate { get; set; }
     public bool ShowRemaining { get; set; } = true;
