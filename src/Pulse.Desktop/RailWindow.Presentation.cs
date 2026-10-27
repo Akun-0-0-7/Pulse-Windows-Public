@@ -14,6 +14,8 @@ public sealed partial class RailWindow
     private RailMotionValue? detailMotion;
     private Size expandedExtent=new(100,100),slotExtent=new(100,100),closedExtent=new(6,96);
     private Color expandedColor,closedColor;
+    private Color closedTrackColor;
+    private double? closedFraction;
     private string? ringStructure;
     private Border? detailHost;
     private RailBubble? detailBubble;
@@ -60,7 +62,9 @@ public sealed partial class RailWindow
         foreach(var pair in accounts.Zip(rings.Children.OfType<RingTile>()))
             pair.Second.Update(app.Engine.Reading(pair.First.Id),ProviderCatalog.Find(pair.First.ProviderId),app.Engine.IsRefreshing,app.Activities.GetValueOrDefault(pair.First.Id));
         expandedColor=Ui.Brush(AppearancePalette.RailBackground(config)).Color;
-        closedColor=Ui.Brush(AppearancePalette.Dock(config,app.Engine.Readings)).Color;
+        var dock=AppearancePalette.DockState(config,app.Engine.Readings);
+        closedColor=Ui.Brush(dock.Color).Color;closedFraction=dock.Fraction;
+        closedTrackColor=((SolidColorBrush)RailColors.DockTrack(config)).Color;
         UpdateRailGeometry(RailScreen.Resolve(config.PanelDisplay),true);RefreshDetail();
     }
     private void UpdateRailGeometry(System.Windows.Forms.Screen screen,bool queuePlacement)
@@ -97,7 +101,10 @@ public sealed partial class RailWindow
         var p=Math.Clamp(value,0,1);
         var rect=Berth(new Size(closedExtent.Width+(expandedExtent.Width-closedExtent.Width)*p,closedExtent.Height+(expandedExtent.Height-closedExtent.Height)*p));
         byte Mix(byte a,byte b)=>(byte)Math.Round(a+(b-a)*p);
-        chrome.Update(rect,Color.FromArgb(Mix(closedColor.A,expandedColor.A),Mix(closedColor.R,expandedColor.R),Mix(closedColor.G,expandedColor.G),Mix(closedColor.B,expandedColor.B)),p,app.Engine.Config.DockEdge,RailCard.Scale(app.Engine.Config),app.Engine.Config.Theme=="light");
+        var fill=Color.FromArgb(Mix(closedColor.A,expandedColor.A),Mix(closedColor.R,expandedColor.R),Mix(closedColor.G,expandedColor.G),Mix(closedColor.B,expandedColor.B));
+        var track=Color.FromArgb(Mix(closedTrackColor.A,expandedColor.A),Mix(closedTrackColor.R,expandedColor.R),Mix(closedTrackColor.G,expandedColor.G),Mix(closedTrackColor.B,expandedColor.B));
+        var progress=(app.Engine.Config.Appearance?.DockShowProgress??true)&&app.Engine.Config.DockEdge!="free"&&p<1;
+        chrome.Update(rect,fill,p,app.Engine.Config.DockEdge,RailCard.Scale(app.Engine.Config),app.Engine.Config.Theme=="light",progress,closedFraction,track);
         var hostX=Canvas.GetLeft(expandedHost);var hostY=Canvas.GetTop(expandedHost);
         expandedClip.Rect=new Rect(rect.X-(double.IsNaN(hostX)?0:hostX),rect.Y-(double.IsNaN(hostY)?0:hostY),rect.Width,rect.Height);
         expandedClip.RadiusX=expandedClip.RadiusY=3+19*p;

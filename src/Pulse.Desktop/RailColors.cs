@@ -8,6 +8,7 @@ internal static class RailColors
     public static Brush Foreground(AppConfig config,bool detail=false,bool inSettings=false)=>Ui.Brush(AppearancePalette.Foreground(Surface(config,detail,inSettings)));
     public static Brush Secondary(AppConfig config,bool detail=false,bool inSettings=false)=>Blend(config,detail,inSettings,.45);
     public static Brush Track(AppConfig config,bool detail=false,bool inSettings=false)=>Blend(config,detail,inSettings,.17);
+    public static Brush DockTrack(AppConfig config)=>Blend(config,false,false,.32);
     public static Brush Quota(AppConfig config,double? used,string? accountColor=null,bool exhausted=false,bool detail=false,bool inSettings=false)=>
         Ui.Brush(AppearancePalette.Quota(config,used,exhausted,accountColor,AppearancePalette.Foreground(Surface(config,detail,inSettings))));
     private static Brush Blend(AppConfig config,bool detail,bool inSettings,double amount)

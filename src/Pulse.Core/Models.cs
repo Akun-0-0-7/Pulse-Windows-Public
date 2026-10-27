@@ -28,6 +28,7 @@ public sealed class AppearanceSettings
     public string? DetailBackground { get; set; }
     public string? DockColor { get; set; }
     public string DockColorMode { get; set; } = "usage";
+    public bool DockShowProgress { get; set; } = true;
     public string QuotaColorMode { get; set; } = "thresholds";
     public string? QuotaNormal { get; set; }
     public string? QuotaWarning { get; set; }

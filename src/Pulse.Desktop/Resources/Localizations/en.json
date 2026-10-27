@@ -522,5 +522,8 @@
   "稳定版更新源": "Stable update feed",
   "预览版更新源": "Preview update feed",
   "留空使用稳定版更新源。预览版更新源包含体验版本；选择来源不会立即下载或安装。": "Leave blank to use the stable update feed. The preview feed includes prerelease builds; choosing a feed does not immediately download or install updates.",
-  "跟随额度时只看各账号圆环当前显示的窗口，再取最高已用比例；无有效读数时使用收起条颜色。": "When following quota, consider only the quota window currently shown by each account's ring, then use the highest percentage used. If no valid reading is available, use the collapsed strip color."
+  "跟随额度时只看各账号圆环当前显示的窗口，再取最高已用比例；无有效读数时使用收起条颜色。": "When following quota, consider only the quota window currently shown by each account's ring, then use the highest percentage used. If no valid reading is available, use the collapsed strip color.",
+
+  "收起条显示额度进度": "Show quota progress in the collapsed strip",
+  "进度长度跟随“显示剩余额度”；颜色沿用额度配色。关闭后恢复纯色收起条。": "The fill follows “Show remaining quota” and uses your quota colors. Turn this off to restore the solid collapsed strip."
 }
