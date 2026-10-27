@@ -114,11 +114,11 @@ public sealed partial class PulseApp : Application
     public async Task CheckUpdates()
     {
         if(checkingUpdate||exiting)return;
-        if(!Uri.TryCreate(Engine.Config.UpdateManifestUrl,UriKind.Absolute,out var uri)||uri.Scheme!="https"){MessageBox.Show("尚未配置 Windows 发布源。可在设置的“关于与更新”页填写更新清单地址。","Pulse");return;}
+        if(!Uri.TryCreate(AppReleaseInfo.ManifestUrl(Engine.Config.UpdateManifestUrl),UriKind.Absolute,out var uri)||uri.Scheme!="https"){MessageBox.Show("尚未配置 Windows 发布源。可在设置的“关于与更新”页填写更新清单地址。","Pulse");return;}
         checkingUpdate=true;
         try {
-            using var client=UsageEngine.CreateHttp(Engine.Config);var manifest=await UpdatePackage.ReadManifestAsync(client,uri,Engine.LifetimeToken);
-            if(manifest.Version<=new Version(0,1,5,0)){MessageBox.Show("当前已是此发布源提供的最新版本。","Pulse");return;}
+            using var client=UpdateHttpClient.Create(Engine.Config);var manifest=await UpdatePackage.ReadManifestAsync(client,uri,Engine.LifetimeToken);
+            if(!AppReleaseInfo.IsNewer(manifest.VersionText,AppReleaseInfo.CurrentVersion)){MessageBox.Show("当前已是此发布源提供的最新版本。","Pulse");return;}
             tray?.ShowBalloonTip(4000,"Pulse",Localization.Translate("正在下载并校验 Windows 更新包…"),System.Windows.Forms.ToolTipIcon.Info);
             var prepared=await UpdatePackage.PrepareAsync(client,manifest,Storage.Root,Engine.LifetimeToken);if(exiting)return;
             if(MessageBox.Show($"Windows 更新包 {prepared.Version} 已下载并通过 SHA-256 校验。\n文件数：{prepared.Files.Count}\n安装目录：{AppContext.BaseDirectory}\n准备目录：{prepared.PreparationDirectory}\n现在退出 Pulse 并安装？","Pulse",MessageBoxButton.YesNo)!=MessageBoxResult.Yes)return;

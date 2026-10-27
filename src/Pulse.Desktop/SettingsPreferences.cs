@@ -48,6 +48,12 @@ public sealed partial class SettingsWindow
     }
     private void About()
     {
-        Header("关于 Pulse Windows","Windows 移植版本 0.1.5 · 基于 Pulse 1.12.2");page.Children.Add(Ui.Label("原作者：qunqin24\n上游许可证：Apache-2.0\nWindows 版使用独立实现的桌面界面和本机存储。"));page.Children.Add(Ui.Button("上游项目",()=>WindowsServices.Open("https://github.com/qunqin24/Pulse")));AddField("Windows 更新清单地址（HTTPS）",app.Engine.Config.UpdateManifestUrl??"",text=>app.Engine.Config.UpdateManifestUrl=text);page.Children.Add(Ui.Button("检查更新",()=>_=app.CheckUpdates()));page.Children.Add(Ui.Button("打开许可证",()=>WindowsServices.Open(Path.Combine(AppContext.BaseDirectory,"LICENSE"))));
+        Header("关于 Pulse Windows",Localization.Format("Windows 移植版本 {0} · 基于 Pulse 1.12.2",AppReleaseInfo.CurrentVersion));page.Children.Add(Ui.Label("原作者：qunqin24\n上游许可证：Apache-2.0\nWindows 版使用独立实现的桌面界面和本机存储。"));page.Children.Add(Ui.Button("上游项目",()=>WindowsServices.Open("https://github.com/qunqin24/Pulse")));
+        page.Children.Add(Ui.Label("Windows 更新清单地址（HTTPS）",13,Ui.Muted));
+        var manifest=Ui.Field(AppReleaseInfo.ManifestUrl(app.Engine.Config.UpdateManifestUrl),text=>{app.Engine.Config.UpdateManifestUrl=text;app.Save();});manifest.Tag="update-manifest-url";page.Children.Add(manifest);
+        void Source(string url){if(manifest.Text==url){app.Engine.Config.UpdateManifestUrl=url;app.Save();}else manifest.Text=url;}
+        page.Children.Add(Ui.Row(Ui.Button("稳定版更新源",()=>Source(AppReleaseInfo.StableManifestUrl)),Ui.Button("预览版更新源",()=>Source(AppReleaseInfo.PreviewManifestUrl))));
+        page.Children.Add(Ui.Label("留空使用稳定版更新源。预览版更新源包含体验版本；选择来源不会立即下载或安装。",12,Ui.Muted));
+        page.Children.Add(Ui.Button("检查更新",()=>_=app.CheckUpdates()));page.Children.Add(Ui.Button("打开许可证",()=>WindowsServices.Open(Path.Combine(AppContext.BaseDirectory,"LICENSE"))));
     }
 }
