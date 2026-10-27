@@ -6,7 +6,7 @@
 
 当前公开版本：**0.1.5**。
 
-体验新功能可下载 [0.1.6-preview.8](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/tag/v0.1.6-preview.8)，修复下拉框、设置页滚动条及标题栏配色，并让收起条颜色跟随圆环当前显示的额度窗口。首次手动升级后，可在“关于与更新”选择预览版更新源。稳定版与预览版的固定地址、发布顺序及清单生成命令见[更新说明](Docs/updates.md)。
+体验新功能可下载 [0.1.6-preview.9](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/tag/v0.1.6-preview.9)，贴边收起条可按当前额度比例显示进度，并沿用渐变等配色设置；悬停仍展开原来的圆环和详情。首次手动升级后，可在“关于与更新”选择预览版更新源。稳定版与预览版的固定地址、发布顺序及清单生成命令见[更新说明](Docs/updates.md)。
 
 ## 下载与使用
 

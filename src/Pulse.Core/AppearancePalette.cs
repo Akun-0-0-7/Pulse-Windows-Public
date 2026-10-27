@@ -3,6 +3,8 @@ using System.Text.Json.Serialization;
 
 namespace Pulse.Core;
 
+public sealed record DockProgressState(double? UsedPercent,double? Fraction,string Color);
+
 public static class AppearancePalette
 {
     private static readonly AppearanceSettings defaults=new();
@@ -68,9 +70,11 @@ public static class AppearancePalette
     }
 
     public static string Dock(AppConfig config,IEnumerable<UsageReading> readings)
+        =>Settings(config).DockColorMode=="fixed"?Resolve(Settings(config).DockColor,ThemeForeground(config)):DockState(config,readings).Color;
+
+    public static DockProgressState DockState(AppConfig config,IEnumerable<UsageReading> readings)
     {
         var neutral=Resolve(Settings(config).DockColor,ThemeForeground(config));
-        if(Settings(config).DockColorMode=="fixed")return neutral;
         var enabled=(config.Accounts??[]).Where(account=>account is not null&&account.Enabled).ToLookup(account=>(account.Id,account.ProviderId));
         double? highest=null;var exhausted=false;
         foreach(var reading in readings??[])
@@ -91,7 +95,11 @@ public static class AppearancePalette
                 {highest=effectiveUsed;exhausted=window.Exhausted;}
             }
         }
-        return highest is {} used?Quota(config,used,exhausted):neutral;
+        if(highest is not {} used)return new(null,null,neutral);
+        used=Math.Clamp(used,0,100);
+        var fraction=(config.ShowRemaining?100-used:used)/100;
+        var color=Settings(config).DockColorMode=="fixed"?neutral:Quota(config,used,exhausted);
+        return new(used,fraction,color);
     }
 
     public static string Signature(AppConfig config)=>JsonSerializer.Serialize(new{config.Theme,Appearance=Settings(config)},signatureJson);

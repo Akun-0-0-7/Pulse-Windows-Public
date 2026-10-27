@@ -14,6 +14,8 @@ public sealed partial class SettingsWindow
         page.Children.Add(Ui.Label("可点色块选色，或输入 #RRGGBB 后按 Enter、应用或离开输入框。留空使用默认颜色。",12,Ui.Muted));
 
         ColorSection("贴边悬浮条与详情卡");
+        var progress=Ui.Check("收起条显示额度进度",colors.DockShowProgress,value=>{colors.DockShowProgress=value;app.SaveAppearance();});progress.Tag="dock-show-progress";page.Children.Add(progress);
+        page.Children.Add(Ui.Label("进度长度跟随“显示剩余额度”；颜色沿用额度配色。关闭后恢复纯色收起条。",12,Ui.Muted));
         AddColorChoice("收起条配色","DockColorMode",[("usage","跟随额度"),("fixed","固定颜色")],colors.DockColorMode,value=>colors.DockColorMode=value);
         AddColor("收起条颜色","DockColor",()=>colors.DockColor,value=>colors.DockColor=value,()=>AppearancePalette.Resolve(null,config.Theme=="light"?"#202335":"#FFFFFF"));
         page.Children.Add(Ui.Label("跟随额度时只看各账号圆环当前显示的窗口，再取最高已用比例；无有效读数时使用收起条颜色。",12,Ui.Muted));
