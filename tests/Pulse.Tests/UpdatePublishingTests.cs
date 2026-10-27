@@ -156,7 +156,16 @@ function global:Invoke-FixtureDotnet {
             Assert.True(result.ExitCode == 0, result.Output + " | " + result.Error);
             var calls = File.ReadAllLines(Path.Combine(directory, "calls.jsonl")); Assert.Equal(2, calls.Length);
             foreach (var call in calls) { using var json = JsonDocument.Parse(call); Assert.True(json.RootElement.GetProperty("arguments").EnumerateArray().Any(value => value.GetString() == "-p:Version=0.1.6-preview.6"), "A published executable did not receive the requested preview version"); }
-            Assert.True(File.Exists(Path.Combine(directory, "artifacts/Pulse-Windows-Public-0.1.6-preview.6-win-x64.zip")), "Preview archive was not produced");
+            var package = Path.Combine(directory, "artifacts/Pulse-Windows-Public-0.1.6-preview.6-win-x64.zip");
+            Assert.True(File.Exists(package), "Preview archive was not produced");
+            string[] entries; using (var zip = ZipFile.OpenRead(package)) entries = zip.Entries.Select(entry => entry.FullName).ToArray();
+            var manifestPath = Path.Combine(directory, "updates-preview.json");
+            var manifest = await Manifest("0.1.6-preview.6", package, "https://updates.invalid/Pulse.zip", manifestPath);
+            Assert.True(manifest.ExitCode == 0, "The standard ZIP could not produce an update manifest: " + manifest.Text);
+            Assert.True(entries.Length > 0 && entries.All(name => !name.Contains('\\') && name.StartsWith("Pulse-Windows-Public-0.1.6-preview.6-win-x64/", StringComparison.Ordinal)), "Standard ZIP entries must use safe forward-slash paths beneath one release root");
+            await using var stream = File.OpenRead(package);
+            var prepared = await UpdatePackage.PrepareArchiveAsync(stream, UpdatePackage.ParseManifest(File.ReadAllText(manifestPath)), Path.Combine(directory, "staging"));
+            Assert.Equal("synthetic desktop" + Environment.NewLine, File.ReadAllText(Path.Combine(prepared.PackageRoot, "Pulse.exe")));
         } finally { Directory.Delete(directory, true); }
     }
 }

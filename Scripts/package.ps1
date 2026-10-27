@@ -52,7 +52,37 @@ try {
     if ($LASTEXITCODE -ne 0) { $taskCommit = $null }
     [ordered]@{version=$Version;edition='public';builtAt=[DateTimeOffset]::UtcNow.ToString('o');architecture='win-x64';sourceCommit=$taskCommit;sourceRepository='https://github.com/Akun-0-0-7/Pulse-Windows-Public';upstreamVersion='1.12.2';upstreamCommit='b035a7acf1aad9c1b6f9f895197ad1a5f58ea64e'} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $taskOutput 'build-info.json') -Encoding UTF8
     $taskZip = Join-Path $taskArtifacts "Pulse-Windows-Public-$Version-win-x64.zip"
-    Compress-Archive -LiteralPath $taskOutput -DestinationPath $taskZip -Force
+    if ((Test-Path -LiteralPath $taskZip) -and ((Get-Item -LiteralPath $taskZip -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw '更新 ZIP 是文件链接，已停止' }
+    $taskZipRoot = $taskOutput.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+    $taskZipPrefix = [IO.Path]::GetFileName($taskOutput) + '/'
+    $taskZipFiles = New-Object 'System.Collections.Generic.List[string]'
+    $taskZipDirectories = New-Object 'System.Collections.Generic.Queue[string]'
+    $taskZipDirectories.Enqueue($taskOutput)
+    while ($taskZipDirectories.Count) {
+        $taskZipDirectory = $taskZipDirectories.Dequeue()
+        foreach ($taskZipItem in Get-ChildItem -LiteralPath $taskZipDirectory -Force) {
+            $taskZipFullName = [IO.Path]::GetFullPath($taskZipItem.FullName)
+            if (-not $taskZipFullName.StartsWith($taskZipRoot, [StringComparison]::OrdinalIgnoreCase) -or ($taskZipItem.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw '发布目录包含链接或越界路径，已停止' }
+            $taskZipRelative = $taskZipFullName.Substring($taskZipRoot.Length).Replace('\', '/')
+            if ($taskZipPrefix.Length + $taskZipRelative.Length -gt 1024 -or $taskZipRelative -match '(^/|[<>:"|?*\x00-\x1f])') { throw '发布目录包含无效 ZIP 路径' }
+            foreach ($taskZipPart in $taskZipRelative.Split('/')) {
+                if ($taskZipPart -in @('', '.', '..') -or $taskZipPart.Length -gt 255 -or $taskZipPart.EndsWith('.') -or $taskZipPart.EndsWith(' ') -or $taskZipPart -match '\A(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|\z)') { throw '发布目录包含不安全的 Windows 文件名' }
+            }
+            if ($taskZipItem.PSIsContainer) { $taskZipDirectories.Enqueue($taskZipFullName) } else { $taskZipFiles.Add($taskZipFullName) }
+        }
+    }
+    Add-Type -AssemblyName System.IO.Compression
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $taskZipStream = [IO.File]::Open($taskZip, [IO.FileMode]::Create, [IO.FileAccess]::Write, [IO.FileShare]::None)
+    try {
+        $taskZipArchive = New-Object IO.Compression.ZipArchive($taskZipStream, [IO.Compression.ZipArchiveMode]::Create, $true)
+        try {
+            foreach ($taskZipFile in $taskZipFiles | Sort-Object) {
+                $taskZipEntry = $taskZipPrefix + $taskZipFile.Substring($taskZipRoot.Length).Replace('\', '/')
+                [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($taskZipArchive, $taskZipFile, $taskZipEntry, [IO.Compression.CompressionLevel]::Optimal)
+            }
+        } finally { $taskZipArchive.Dispose() }
+    } finally { $taskZipStream.Dispose() }
     Get-FileHash -LiteralPath $taskZip -Algorithm SHA256 | ForEach-Object { "$($_.Hash)  $([IO.Path]::GetFileName($_.Path))" } | Set-Content -LiteralPath ($taskZip + '.sha256')
     Write-Output $taskZip
 } finally { Pop-Location }
