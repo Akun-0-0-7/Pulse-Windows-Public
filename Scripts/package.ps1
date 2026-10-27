@@ -1,6 +1,6 @@
-param([string]$Version = '0.1.5')
+﻿param([string]$Version = '0.1.5')
 $ErrorActionPreference = 'Stop'
-if ($Version -notmatch '^\d+\.\d+\.\d+$') { throw '版本号应为三个整数，例如 0.1.5' }
+if ($Version -notmatch '\A(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-preview\.(?:0|[1-9][0-9]*))?\z') { throw '版本号应为三个整数，可附加 -preview.N，例如 0.1.6-preview.6' }
 $taskRoot = [IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))
 $taskArtifacts = [IO.Path]::GetFullPath((Join-Path $taskRoot 'artifacts'))
 $taskOutput = [IO.Path]::GetFullPath((Join-Path $taskArtifacts "Pulse-Windows-Public-$Version-win-x64"))
@@ -17,9 +17,9 @@ New-Item -ItemType Directory -Path $taskOutput -Force | Out-Null
 Push-Location $taskRoot
 try {
     $taskPathMap = '-p:PathMap=' + $taskRoot + '=/_/Pulse-Windows'
-    & $taskDotnet publish src\Pulse.Desktop -c Release -r win-x64 --self-contained true -o $taskOutput --nologo -p:DebugType=None -p:DebugSymbols=false $taskPathMap
+    & $taskDotnet publish src\Pulse.Desktop -c Release -r win-x64 --self-contained true -o $taskOutput --nologo -p:DebugType=None -p:DebugSymbols=false "-p:Version=$Version" $taskPathMap
     if ($LASTEXITCODE -ne 0) { throw '桌面程序发布失败' }
-    & $taskDotnet publish src\Pulse.Cli -c Release -r win-x64 --self-contained true -o $taskOutput --nologo -p:DebugType=None -p:DebugSymbols=false $taskPathMap
+    & $taskDotnet publish src\Pulse.Cli -c Release -r win-x64 --self-contained true -o $taskOutput --nologo -p:DebugType=None -p:DebugSymbols=false "-p:Version=$Version" $taskPathMap
     if ($LASTEXITCODE -ne 0) { throw '命令行程序发布失败' }
     foreach ($taskName in @('LICENSE','THIRD_PARTY_NOTICES.md','README.md','README.zh-CN.md','Docs')) { Copy-Item -LiteralPath (Join-Path $taskRoot $taskName) -Destination $taskOutput -Recurse -Force }
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'install.ps1') -Destination $taskOutput
