@@ -64,7 +64,7 @@ https://raw.githubusercontent.com/Akun-0-0-7/Pulse-Windows-Public/main/updates.j
 
 点击“检查更新”后，程序读取该发布源。有较新版本时先下载并校验，再显示文件和安装信息；只有点击确认安装，才退出程序并替换文件。更新机制见[更新说明](Docs/updates.md)。
 
-预览版渠道：从 [0.1.6-preview.6 版本页](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/tag/v0.1.6-preview.6) 手动升级一次后，在“关于与更新”选择“预览版更新源”，再点“检查更新”。固定地址为 `https://raw.githubusercontent.com/Akun-0-0-7/Pulse-Windows-Public/main/updates-preview.json`。旧版检查器不能正确处理预览标签和 GitHub 下载跳转。预览发布不改变稳定版清单；维护者按[发布步骤](Docs/updates.md#维护者发布步骤)先发布 ZIP，再提交对应清单。
+预览版渠道：从 [0.1.6-preview.7 版本页](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/tag/v0.1.6-preview.7) 手动升级一次后，在“关于与更新”选择“预览版更新源”，再点“检查更新”。固定地址为 `https://raw.githubusercontent.com/Akun-0-0-7/Pulse-Windows-Public/main/updates-preview.json`。0.1.6-preview.5 及更早版本的检查器不能正确处理预览标签和 GitHub 下载跳转。预览发布不改变稳定版清单；维护者按[发布步骤](Docs/updates.md#维护者发布步骤)先发布 ZIP，再提交对应清单。
 
 卸载可运行安装目录内的 `uninstall.ps1`，个人设置和数据会保留。
 

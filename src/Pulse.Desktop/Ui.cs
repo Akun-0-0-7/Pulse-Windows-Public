@@ -1,5 +1,5 @@
 namespace Pulse.Desktop;
-public static class Ui
+public static partial class Ui
 {
     private static readonly SolidColorBrush background=new(),card=new(),border=new(),text=new(),muted=new(),accent=new(),selection=new(),accentText=new();
     static Ui()=>ApplyTheme("dark");
@@ -29,6 +29,8 @@ public static class Ui
         }
         selection.Color=customSurfaces||customAccent?SelectionSurface(card.Color,accent.Color,text.Color):Brush("#343146").Color;
         accentText.Color=customSurfaces||customAccent?Brush(AppearancePalette.Foreground(AppearancePalette.AppAccent(config))).Color:background.Color;
+        selectorText.Color=Brush(AppearancePalette.Foreground(AppearancePalette.AppSurface(config))).Color;
+        selectorHighlight.Color=SelectionSurface(card.Color,accent.Color,selectorText.Color);
     }
     private static Color CommonForeground(Color page,Color surface,bool secondary)
     {
@@ -73,7 +75,6 @@ public static class Ui
     }
     public static CheckBox Check(string text,bool value,Action<bool> changed) {var box=new CheckBox {Content=Localization.Translate(text),IsChecked=value,Foreground=Text,Margin=new Thickness(0,5,0,12),FontSize=14}; box.Checked+=(_,_)=>changed(true); box.Unchecked+=(_,_)=>changed(false); return box;}
     public static TextBox Field(string value,Action<string>? changed=null) {var box=new TextBox {Text=value,Background=Bg,Foreground=Text,BorderBrush=BorderBrush,Padding=new Thickness(10,8,10,8),Margin=new Thickness(0,0,0,12),FontSize=14}; if(changed is not null) box.TextChanged+=(_,_)=>changed(box.Text); return box;}
-    public static ComboBox Select(IEnumerable<string> items,string selected,Action<string> changed) {var box=new ComboBox {SelectedValuePath="Tag",Background=Card,Foreground=Text,BorderBrush=BorderBrush,Margin=new Thickness(0,0,0,14),Padding=new Thickness(6),MinWidth=140};foreach(var item in items)box.Items.Add(new ComboBoxItem{Content=Option(item),Tag=item,Background=Card,Foreground=Text,BorderBrush=BorderBrush});box.SelectedValue=selected;box.SelectionChanged+=(_,_)=>{if(box.SelectedValue is string text) changed(text);}; return box;}
     public static string Option(string value)=>Localization.Translate(value switch {"desktop"=>"桌面会话","desktopApp"=>"桌面客户端","status-line"=>"Claude 状态栏","desktop-cache"=>"桌面用量缓存","number"=>"数字","ring"=>"圆环","dual"=>"5 小时与每周并排","automatic"=>"自动选择","endpoint"=>"直接读取服务","tooling"=>"使用本机工具","dark"=>"深色","light"=>"浅色","glass"=>"透明表面","left"=>"左侧","right"=>"右侧","top"=>"顶部","bottom"=>"底部","free"=>"自由悬浮","system"=>"跟随系统","custom"=>"自定义代理","none"=>"不使用代理","sinceTopUp"=>"按已观察充值额度","balanceOnly"=>"只显示余额","budget"=>"按我的预算","day"=>"日报","week"=>"周报","month"=>"月报","year"=>"年报","zh-CN"=>"简体中文","zh-Hant"=>"繁體中文","en"=>"English","ja"=>"日本語","ko"=>"한국어","ru"=>"Русский",_=>value});
     public static Border Box(UIElement child)=>new(){Child=child,Background=Card,BorderBrush=BorderBrush,BorderThickness=new Thickness(1),CornerRadius=new CornerRadius(14),Padding=new Thickness(18),Margin=new Thickness(0,0,0,16)};
     public static StackPanel Row(params UIElement[] items) {var panel=new StackPanel {Orientation=Orientation.Horizontal}; foreach(var item in items) panel.Children.Add(item); return panel;}

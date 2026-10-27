@@ -6,7 +6,7 @@
 
 当前公开版本：**0.1.5**。
 
-体验新功能可下载 [0.1.6-preview.6](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/tag/v0.1.6-preview.6)。首次手动升级后，可在“关于与更新”选择预览版更新源。稳定版与预览版的固定地址、发布顺序及清单生成命令见[更新说明](Docs/updates.md)。
+体验新功能可下载 [0.1.6-preview.7](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/tag/v0.1.6-preview.7)，修复下拉框白底白字。首次手动升级后，可在“关于与更新”选择预览版更新源。稳定版与预览版的固定地址、发布顺序及清单生成命令见[更新说明](Docs/updates.md)。
 
 ## 下载与使用
 
