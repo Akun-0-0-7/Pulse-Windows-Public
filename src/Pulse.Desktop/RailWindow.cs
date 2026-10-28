@@ -107,7 +107,12 @@ public sealed class RingTile(AccountConfig account,UsageReading? reading,Provide
         var brush=RailColors.Quota(config,percent,account.AccentColor,window?.Exhausted==true);
         drawing.DrawEllipse(null,new Pen(RailColors.Track(config),4*s),center,radius,radius);
         if(percent is {} value&&UsageFigures.Percent(value,config.ShowRemaining)>0)Arc(drawing,center,radius,Math.Clamp((config.ShowRemaining?100-value:value)/100,0,1),new Pen(brush,4*s){StartLineCap=PenLineCap.Round,EndLineCap=PenLineCap.Round});
-        if(config.ShowSecondaryRing&&reading?.Windows.Where(w=>w.Id!=window?.Id).OrderByDescending(w=>w.UsedPercent).FirstOrDefault() is {} second)Arc(drawing,center,radius-5*s,Math.Clamp(second.UsedPercent/100,.001,1),new Pen(RailColors.Quota(config,second.UsedPercent,account.AccentColor,second.Exhausted),s));
+        if(config.ShowSecondaryRing&&reading?.Windows.Where(w=>w.Id!=window?.Id).OrderByDescending(w=>w.UsedPercent).FirstOrDefault() is {} second&&double.IsFinite(second.UsedPercent)&&second.UsedPercent>=0)
+        {
+            var used=second.Exhausted?Math.Max(100,second.UsedPercent):second.UsedPercent;
+            var fraction=Math.Clamp(config.SecondaryRingShowRemaining?1-used/100:used/100,0,1);
+            if(fraction>0)Arc(drawing,center,radius-5*s,fraction,new Pen(RailColors.Quota(config,second.UsedPercent,account.AccentColor,second.Exhausted),s));
+        }
         if(config.ShowClock&&window is {ReportsLength:true,ResetsAt:{} reset,WindowSeconds:>0}&&window.WindowSeconds is {} seconds)Arc(drawing,center,radius+4*s,Math.Clamp(1-(reset-DateTimeOffset.Now).TotalSeconds/seconds,.001,1),new Pen(RailColors.Secondary(config),s));
         var initial=definition?.Name[..Math.Min(2,definition.Name.Length)]??"P";
         if(config.AnimatedMarks){var shape=int.TryParse(account.Extra.GetValueOrDefault("botBody"),out var body)?body:0;var personality=int.TryParse(account.Extra.GetValueOrDefault("botPersonality"),out var mood)?mood:0;BotRenderer.Draw(drawing,center,brush,window?.Exhausted==true?"spent":active?"working":fetching?"fetching":"quiet",Math.Clamp(shape,0,17),Math.Clamp(personality,0,7));}
