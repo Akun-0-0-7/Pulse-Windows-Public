@@ -1,4 +1,4 @@
-﻿param([string]$Version = '0.1.5')
+﻿param([string]$Version = '0.1.6')
 $ErrorActionPreference = 'Stop'
 if ($Version -notmatch '\A(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-preview\.(?:0|[1-9][0-9]*))?\z') { throw '版本号应为三个整数，可附加 -preview.N，例如 0.1.6-preview.6' }
 $taskRoot = [IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))

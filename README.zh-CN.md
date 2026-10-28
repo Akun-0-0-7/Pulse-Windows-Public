@@ -1,12 +1,12 @@
 # Pulse Windows 使用说明
 
-Pulse Windows 在桌面悬浮栏和系统托盘中显示 AI 服务额度、余额和重置倒计时。公开版本为 **0.1.5**，基于 [qunqin24/Pulse](https://github.com/qunqin24/Pulse) 1.12.2 移植。
+Pulse Windows 在桌面悬浮栏和系统托盘中显示 AI 服务额度、余额和重置倒计时。公开版本为 **0.1.6**，基于 [qunqin24/Pulse](https://github.com/qunqin24/Pulse) 1.12.2 移植。
 
 支持 Windows 11、Windows 10 企业版长期服务版（LTSC）21H2 的 64 位 Intel/AMD 电脑。
 
 ## 安装与首次运行
 
-1. 从[版本下载页](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/latest)下载 `Pulse-Windows-Public-0.1.5-win-x64.zip`。
+1. 从[版本下载页](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/latest)下载 `Pulse-Windows-Public-0.1.6-win-x64.zip`。
 2. 完整解压，保留同目录的组件文件。
 3. 双击 `Pulse.exe` 即可运行。也可双击 `安装到当前用户.cmd`，安装到当前用户应用目录并创建开始菜单入口，无需管理员权限。
 4. 在欢迎页选择需要监控的服务，点击“开始监控”。也可点击“稍后设置”，之后到“服务与账号”添加。
@@ -31,7 +31,7 @@ Pulse Windows 在桌面悬浮栏和系统托盘中显示 AI 服务额度、余�
 
 - 右键悬浮栏或托盘图标打开设置；点击“刷新额度”查询已启用账号。
 - 在“位置与行为”开启“停靠时自动收起”，悬浮栏停靠屏幕边缘后，鼠标离开会收成细条，移回展开。自由悬浮时保持展开。
-- 在“外观与圆环”选择已用或剩余、主额度窗口和圆环样式。
+- 在“外观与圆环”选择已用或剩余及圆环样式；主额度窗口在对应账号页选择。
 - “内圈显示剩余额度”单独控制第二条内圈：开启显示剩余比例，关闭显示已用比例，默认关闭。以外圈显示 5 小时、内圈显示每周额度为例，每周已用 25% 时，开启后内圈绘制 75%，关闭绘制 25%。外圈和收起进度条仍使用原来的“显示剩余额度”选项。
 - 关闭设置窗口后，程序继续运行。完全退出请使用托盘或悬浮栏菜单的“退出”。
 
@@ -41,11 +41,11 @@ Pulse Windows 在桌面悬浮栏和系统托盘中显示 AI 服务额度、余�
 
 该功能默认关闭，仅供符合本机登录条件的 Codex、Claude Code 主账号开启。`hi` 是通过官方本机工具提交的一条普通消息，**会使用账号额度**。
 
-0.1.5 按已记录的五小时重置时间倒计时执行，到点且处于允许时段时发送一次，再请求刷新额度。每周窗口不单独发送。
+程序按已记录的五小时重置时间处理，也会在新鲜读数报告原始剩余 100% 时检测新周期；同一轮成功后不会重复发送。每周窗口不单独发送。
 
-在账号页开启“5 小时重置后发送一次 hi 并刷新额度”；需要全天执行时，到“网络与刷新”把允许开始和结束时间都设为 `00`。同一周期只认领一次，发送失败也不会反复重发。
+在账号页开启“5 小时重置后发送一次 hi 并刷新额度”；需要全天执行时，到“网络与刷新”把允许开始和结束时间都设为 `00`。明确的网络失败或额度拒绝会等待最新可用额度，以 1、2、5 分钟退避补发；超时或结果不确定时不自动重放，可先查看额度，再点“再次发送 hi 并刷新额度”。
 
-详细规则见[五小时自动发送说明](Docs/five-hour-reset.zh-CN.md)，失败状态见[发送失败排查](Docs/reset-send-hotfix.zh-CN.md)。
+Codex 更新后若以前保存的工具路径已不存在，发送前会重新定位当前工具。通常把“本机工具完整路径（可选）”留空即可；仍可填写有效的自定义路径。详细规则见[五小时发送与失败恢复](Docs/window-starter-recovery.zh-CN.md)。
 
 ## 消耗、报告与服务状态
 
@@ -65,7 +65,7 @@ https://raw.githubusercontent.com/Akun-0-0-7/Pulse-Windows-Public/main/updates.j
 
 点击“检查更新”后，程序读取该发布源。有较新版本时先下载并校验，再显示文件和安装信息；只有点击确认安装，才退出程序并替换文件。更新机制见[更新说明](Docs/updates.md)。
 
-预览版渠道：从 [0.1.6-preview.9 版本页](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/tag/v0.1.6-preview.9) 手动升级一次后，在“关于与更新”选择“预览版更新源”，再点“检查更新”。固定地址为 `https://raw.githubusercontent.com/Akun-0-0-7/Pulse-Windows-Public/main/updates-preview.json`。0.1.6-preview.5 及更早版本的检查器不能正确处理预览标签和 GitHub 下载跳转。预览发布不改变稳定版清单；维护者按[发布步骤](Docs/updates.md#维护者发布步骤)先发布 ZIP，再提交对应清单。
+0.1.5 和 0.1.6-preview.5 及更早版本的检查器不能正确处理部分版本与 GitHub 下载跳转，请先从 [0.1.6 版本页](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/tag/v0.1.6) 手动升级一次。preview.6 及更新版本可直接检查更新。预览渠道固定地址为 `https://raw.githubusercontent.com/Akun-0-0-7/Pulse-Windows-Public/main/updates-preview.json`；本次两个渠道都提供 0.1.6 正式版，后续体验版本只更新预览渠道。维护者按[发布步骤](Docs/updates.md#维护者发布步骤)先发布 ZIP，再提交对应清单。
 
 卸载可运行安装目录内的 `uninstall.ps1`，个人设置和数据会保留。
 
@@ -90,7 +90,7 @@ https://raw.githubusercontent.com/Akun-0-0-7/Pulse-Windows-Public/main/updates.j
 
 ## 源码与构建
 
-`Pulse-Windows-Public-0.1.5-source.zip` 包含程序、离线检查和文档。源码构建需要 .NET 10 开发工具，在源码目录运行：
+`Pulse-Windows-Public-0.1.6-source.zip` 包含程序、离线检查和文档。源码构建需要 .NET 10 开发工具，在源码目录运行：
 
 ```powershell
 .\Scripts\build.ps1

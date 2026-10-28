@@ -134,6 +134,31 @@ public static class WindowStarterExecutionTests
         Assert.Equal("turnIncomplete",WindowStarter.Evaluate("codex",new ProcessResult(1,combined,"",false)).FailureKind);
     }
 
+    [Check] public static async Task MissingSavedCodexPathUsesCurrentToolWithoutASecondSend()
+    {
+        var root=Path.Combine(Path.GetTempPath(),"pulse tool upgrade "+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(root);
+        var previousPath=Environment.GetEnvironmentVariable("PATH");
+        try
+        {
+            var target=Path.GetRelativePath(root,Path.Combine(AppContext.BaseDirectory,"Pulse.Tests.exe"));
+            File.WriteAllText(Path.Combine(root,"codex.cmd"),"@echo off\r\n\"%dp0%/"+target+"\" %*\r\n");
+            Environment.SetEnvironmentVariable("PATH",root);
+            var environment=new Dictionary<string,string>
+            {
+                ["DOTNET_ROOT"]=Directory.GetParent(Path.GetDirectoryName(typeof(object).Assembly.Location)!)!.Parent!.Parent!.FullName,
+                ["SystemRoot"]=Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+                ["TEMP"]=Path.GetTempPath(),["TMP"]=Path.GetTempPath(),["PULSE_TEST_WINDOW_STARTER_FIXTURE"]="true"
+            };
+            var result=await WindowStarter.StartAsync("codex",root,configuredExecutable:Path.Combine(root,"removed-version","codex.exe"),environment:environment);
+            Assert.Equal(0,result.ExitCode);
+            using var document=JsonDocument.Parse(result.Output);
+            Assert.Equal("exec",document.RootElement.GetProperty("args")[0].GetString());
+            Assert.Equal("hi",document.RootElement.GetProperty("args").EnumerateArray().Last().GetString());
+            Assert.Equal(Path.Combine(root,"window-starter"),document.RootElement.GetProperty("cwd").GetString());
+        }
+        finally{Environment.SetEnvironmentVariable("PATH",previousPath);Directory.Delete(root,true);}
+    }
+
     [Check] public static async Task CodexExecutionUsesIsolatedJsonArguments()
     {
         var root=Path.Combine(Path.GetTempPath(),"pulse-window-starter-test-"+Guid.NewGuid().ToString("N"));
