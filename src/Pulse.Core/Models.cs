@@ -64,6 +64,7 @@ public sealed class AppConfig
     public double PanelOpacity { get; set; } = .96;
     public bool ShowClock { get; set; } = true;
     public bool ShowSecondaryRing { get; set; } = true;
+    public bool SecondaryRingShowRemaining { get; set; }
     public bool SegmentedBars { get; set; }
     public bool FollowDisplay { get; set; }
     public bool HideFullscreen { get; set; } = true;

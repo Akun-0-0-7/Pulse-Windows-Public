@@ -38,6 +38,11 @@ internal static partial class Program
         var data=Path.Combine(output,"synthetic-data");Environment.SetEnvironmentVariable("PULSE_DATA_DIR",data);var storage=new AppStorage(data);var account=new AccountConfig{Id="primary-demo",ProviderId="codex",Enabled=true,Detailed=true};storage.SaveConfig(new AppConfig{Accounts=[account]});
         storage.SaveCache([new(){AccountId=account.Id,ProviderId="codex",Plan="cached-plan",ObservedAt=DateTimeOffset.UtcNow,ErrorCode="unreachable",ErrorMessage="cached-connection-error"}]);
         var app=new PulseApp();account=app.Engine.Config.Accounts[0];
+        if(args.Contains("--secondary-ring-only"))
+        {
+            try{SecondaryRingChecks(app);app.Shutdown();return 0;}
+            catch(Exception exception){Console.WriteLine("FAIL: "+exception);app.Shutdown();return 1;}
+        }
         if(args.Contains("--dock-progress-only"))
         {
             try{DockProgressChecks(app);app.Shutdown();return 0;}
@@ -102,6 +107,7 @@ internal static partial class Program
         AutoCollapseChecks(app);
         AppearanceColorChecks(app);
         DockProgressChecks(app);
+        SecondaryRingChecks(app);
         SelectorContrastChecks(app);
         ScrollbarContrastChecks(app);
         SettingsChromeChecks(app);

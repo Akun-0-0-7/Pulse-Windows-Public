@@ -3,7 +3,10 @@ public sealed partial class SettingsWindow
 {
     private void Appearance()
     {
-        var config=app.Engine.Config;Header("外观与圆环","调整浮动栏的读数、颜色和尺寸。");AddCheck("显示剩余额度",config.ShowRemaining,value=>config.ShowRemaining=value);AddCheck("显示第二条额度内环",config.ShowSecondaryRing,value=>config.ShowSecondaryRing=value);AddCheck("显示额度窗口时间弧",config.ShowClock,value=>config.ShowClock=value);AddCheck("分段进度条",config.SegmentedBars,value=>config.SegmentedBars=value);AddCheck("使用动画机器人标记",config.AnimatedMarks,value=>config.AnimatedMarks=value);
+        var config=app.Engine.Config;Header("外观与圆环","调整浮动栏的读数、颜色和尺寸。");AddCheck("显示剩余额度",config.ShowRemaining,value=>config.ShowRemaining=value);AddCheck("显示第二条额度内环",config.ShowSecondaryRing,value=>config.ShowSecondaryRing=value);
+        var secondaryMode=Ui.Check("内圈显示剩余额度",config.SecondaryRingShowRemaining,value=>{config.SecondaryRingShowRemaining=value;app.SaveAppearance();});secondaryMode.Tag="secondary-ring-show-remaining";page.Children.Add(secondaryMode);
+        page.Children.Add(Ui.Label("开启显示剩余，关闭显示已用；只影响第二条内圈。",12,Ui.Muted));
+        AddCheck("显示额度窗口时间弧",config.ShowClock,value=>config.ShowClock=value);AddCheck("分段进度条",config.SegmentedBars,value=>config.SegmentedBars=value);AddCheck("使用动画机器人标记",config.AnimatedMarks,value=>config.AnimatedMarks=value);
         page.Children.Add(Ui.Label("主题",13,Ui.Muted));page.Children.Add(Ui.Select(["dark","light","glass"],config.Theme,value=>{config.Theme=value;app.SaveAppearance();Navigate("appearance");}));
         AppearanceColors();
         AddSelect("圆环大小",["36","48","60","72"],config.RingSize.ToString(),value=>config.RingSize=double.Parse(value));AddSelect("圆环间距",["4","8","12","18"],config.RingGap.ToString(),value=>config.RingGap=double.Parse(value));AddField("面板不透明度（0.2 到 1）",config.PanelOpacity.ToString(System.Globalization.CultureInfo.InvariantCulture),text=>{if(double.TryParse(text,out var opacity))config.PanelOpacity=Math.Clamp(opacity,.2,1);});
