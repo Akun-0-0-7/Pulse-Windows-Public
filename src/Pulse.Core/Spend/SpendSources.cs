@@ -40,7 +40,7 @@ public static class SpendSources
         return rows.AsReadOnly();
     }
     static string Editor(string extension)=>string.Join('|',new[]{"Code","Code - Insiders","VSCodium"}.Select(x=>$"AppData/Roaming/{x}/User/globalStorage/{extension}/tasks").Concat([$".vscode-server/data/User/globalStorage/{extension}/tasks"]));
-    public static IReadOnlyList<string> ResolvePaths(SpendSource source,string home,IReadOnlyDictionary<string,string>? environment=null)
+    public static IReadOnlyList<string> ResolvePaths(SpendSource source,string home,IReadOnlyDictionary<string,string>? environment=null,string? configuredCodexHome=null)
     {
         environment??=new Dictionary<string,string>();
         string? Env(string key)=>environment.TryGetValue(key,out var text)&&!string.IsNullOrWhiteSpace(text)?text.Trim():null;
@@ -55,6 +55,18 @@ public static class SpendSources
             return Path.GetFullPath(Path.Combine(home,relative.Replace('/',Path.DirectorySeparatorChar)));
         }
         var paths=source.Paths.Select(Default).ToList();
+        if(source.Id=="codex")
+        {
+            var configured=!string.IsNullOrWhiteSpace(configuredCodexHome)?configuredCodexHome:Env("CODEX_HOME");
+            if(configured is not null)
+            {
+                try
+                {
+                    var root=Resolve(configured);paths=[Path.Combine(root,"sessions"),Path.Combine(root,"archived_sessions")];
+                }
+                catch(Exception e)when(e is ArgumentException or NotSupportedException or PathTooLongException) { } // Invalid saved/environment paths retain the default home.
+            }
+        }
         var overrideKey=source.Id switch {"hermes"=>"HERMES_HOME","unsloth"=>"UNSLOTH_STUDIO_HOME","jcode"=>"JCODE_HOME","dsh"=>"DSH_HOME","lmstudio"=>"LM_STUDIO_HOME","reasonix"=>"REASONIX_HOME","gemini" or "antigravity-cli" or "antigravity-ide"=>"GEMINI_CLI_HOME",_=>null};
         if(overrideKey is not null&&Env(overrideKey) is {} value)
         {

@@ -16,6 +16,7 @@ public sealed partial class SettingsWindow
     {
         Header("Token 消耗","Token 是模型处理文本的计数单位。金额使用公开 API 价格估算，与订阅费用分开。来源不提供的计数和价格显示为“—”。");
         var config=app.Engine.Config;page.Children.Add(Ui.Check("读取本机消耗记录",config.SpendEnabled,value=>{config.SpendEnabled=value;app.Save();if(value)_=ScanSpend();else{scanning?.Cancel();spendReport=null;Navigate("spend");}}));
+        CodexSpendDirectory(config);
         var begin=new DatePicker {SelectedDate=start,Width=150,Margin=new Thickness(0,0,12,12)};var finish=new DatePicker {SelectedDate=end,Width=150,Margin=new Thickness(0,0,12,12)};begin.SelectedDateChanged+=(_,_)=>{start=begin.SelectedDate??start;};finish.SelectedDateChanged+=(_,_)=>{end=finish.SelectedDate??end;};page.Children.Add(Ui.Row(begin,finish,Ui.Button("应用范围",()=>Navigate("spend"))));
         page.Children.Add(Ui.Row(Ui.Button("重新扫描",()=>_=ScanSpend(),true),Ui.Button("取消扫描",()=>scanning?.Cancel()),Ui.Button("导出明细 CSV",ExportSpend)));
         SpendSourceSettings(config);

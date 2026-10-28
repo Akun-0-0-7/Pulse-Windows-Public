@@ -6,6 +6,8 @@
 
 当前公开版本：**0.1.5**。
 
+体验新功能可下载 [0.1.6-preview.10](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/tag/v0.1.6-preview.10)，内圈可独立切换剩余或已用额度，贴边收起条可按当前额度比例显示进度，并沿用渐变等配色设置。首次手动升级后，可在“关于与更新”选择预览版更新源。稳定版与预览版的固定地址、发布顺序及清单生成命令见[更新说明](Docs/updates.md)。
+
 ## 下载与使用
 
 1. 打开 [版本下载页](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/latest)。
