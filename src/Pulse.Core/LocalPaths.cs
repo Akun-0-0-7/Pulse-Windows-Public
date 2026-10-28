@@ -11,6 +11,7 @@ public static class LocalPaths
         var dirs=(Environment.GetEnvironmentVariable("PATH")??"").Split(Path.PathSeparator).Concat([Path.Combine(Home,".local","bin"),Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),"npm")]);
         foreach(var dir in dirs.Where(d=>!string.IsNullOrWhiteSpace(d))) foreach(var extension in new[]{".exe",".cmd",".bat",""}) { var path=Path.Combine(dir.Trim('"'),Path.HasExtension(name)?name:name+extension); if(File.Exists(path)) return path; }
         if(name.Equals("codex",StringComparison.OrdinalIgnoreCase)){
+            var installed=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Programs","OpenAI","Codex","bin","codex.exe");if(File.Exists(installed))return installed;
             var root=Path.Combine(Home,"AppData","Local","OpenAI","Codex","bin");if(Directory.Exists(root)){var bundled=Directory.EnumerateFiles(root,"codex.exe",new EnumerationOptions{RecurseSubdirectories=true,IgnoreInaccessible=true}).Select(p=>new FileInfo(p)).OrderByDescending(p=>p.LastWriteTimeUtc).FirstOrDefault();if(bundled is not null)return bundled.FullName;}
         }
         var local=Path.Combine(Home,".claude","local",name+".exe");return File.Exists(local)?local:null;

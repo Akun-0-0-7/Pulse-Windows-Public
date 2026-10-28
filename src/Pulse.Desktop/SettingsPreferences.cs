@@ -3,7 +3,12 @@ public sealed partial class SettingsWindow
 {
     private void Appearance()
     {
-        var config=app.Engine.Config;Header("外观与圆环","调整浮动栏的读数、颜色和尺寸。");AddCheck("显示剩余额度",config.ShowRemaining,value=>config.ShowRemaining=value);AddCheck("显示第二条额度内环",config.ShowSecondaryRing,value=>config.ShowSecondaryRing=value);AddCheck("显示额度窗口时间弧",config.ShowClock,value=>config.ShowClock=value);AddCheck("分段进度条",config.SegmentedBars,value=>config.SegmentedBars=value);AddCheck("使用动画机器人标记",config.AnimatedMarks,value=>config.AnimatedMarks=value);AddSelect("主题",["dark","light","glass"],config.Theme,value=>config.Theme=value);
+        var config=app.Engine.Config;Header("外观与圆环","调整浮动栏的读数、颜色和尺寸。");AddCheck("显示剩余额度",config.ShowRemaining,value=>config.ShowRemaining=value);AddCheck("显示第二条额度内环",config.ShowSecondaryRing,value=>config.ShowSecondaryRing=value);
+        var secondaryMode=Ui.Check("内圈显示剩余额度",config.SecondaryRingShowRemaining,value=>{config.SecondaryRingShowRemaining=value;app.SaveAppearance();});secondaryMode.Tag="secondary-ring-show-remaining";page.Children.Add(secondaryMode);
+        page.Children.Add(Ui.Label("开启显示剩余，关闭显示已用；只影响第二条内圈。",12,Ui.Muted));
+        AddCheck("显示额度窗口时间弧",config.ShowClock,value=>config.ShowClock=value);AddCheck("分段进度条",config.SegmentedBars,value=>config.SegmentedBars=value);AddCheck("使用动画机器人标记",config.AnimatedMarks,value=>config.AnimatedMarks=value);
+        page.Children.Add(Ui.Label("主题",13,Ui.Muted));page.Children.Add(Ui.Select(["dark","light","glass"],config.Theme,value=>{config.Theme=value;app.SaveAppearance();Navigate("appearance");}));
+        AppearanceColors();
         AddSelect("圆环大小",["36","48","60","72"],config.RingSize.ToString(),value=>config.RingSize=double.Parse(value));AddSelect("圆环间距",["4","8","12","18"],config.RingGap.ToString(),value=>config.RingGap=double.Parse(value));AddField("面板不透明度（0.2 到 1）",config.PanelOpacity.ToString(System.Globalization.CultureInfo.InvariantCulture),text=>{if(double.TryParse(text,out var opacity))config.PanelOpacity=Math.Clamp(opacity,.2,1);});
         AddSelect("托盘额度样式",["number","ring","dual"],config.TrayUsageMode,value=>config.TrayUsageMode=value);AddSelect("托盘显示账号",new[]{"automatic"}.Concat(config.Accounts.Where(a=>a.Enabled).Select(a=>a.Id)),config.TrayAccountId??"automatic",value=>config.TrayAccountId=value=="automatic"?null:value);AddCheck("点击托盘打开用量总览",config.TrayOpensDashboard,value=>config.TrayOpensDashboard=value);
     }
@@ -46,6 +51,12 @@ public sealed partial class SettingsWindow
     }
     private void About()
     {
-        Header("关于 Pulse Windows","Windows 移植版本 0.1.5 · 基于 Pulse 1.12.2");page.Children.Add(Ui.Label("原作者：qunqin24\n上游许可证：Apache-2.0\nWindows 版使用独立实现的桌面界面和本机存储。"));page.Children.Add(Ui.Button("上游项目",()=>WindowsServices.Open("https://github.com/qunqin24/Pulse")));AddField("Windows 更新清单地址（HTTPS）",app.Engine.Config.UpdateManifestUrl??"",text=>app.Engine.Config.UpdateManifestUrl=text);page.Children.Add(Ui.Button("检查更新",()=>_=app.CheckUpdates()));page.Children.Add(Ui.Button("打开许可证",()=>WindowsServices.Open(Path.Combine(AppContext.BaseDirectory,"LICENSE"))));
+        Header("关于 Pulse Windows",Localization.Format("Windows 移植版本 {0} · 基于 Pulse 1.12.2",AppReleaseInfo.CurrentVersion));page.Children.Add(Ui.Label("原作者：qunqin24\n上游许可证：Apache-2.0\nWindows 版使用独立实现的桌面界面和本机存储。"));page.Children.Add(Ui.Button("上游项目",()=>WindowsServices.Open("https://github.com/qunqin24/Pulse")));
+        page.Children.Add(Ui.Label("Windows 更新清单地址（HTTPS）",13,Ui.Muted));
+        var manifest=Ui.Field(AppReleaseInfo.ManifestUrl(app.Engine.Config.UpdateManifestUrl),text=>{app.Engine.Config.UpdateManifestUrl=text;app.Save();});manifest.Tag="update-manifest-url";page.Children.Add(manifest);
+        void Source(string url){if(manifest.Text==url){app.Engine.Config.UpdateManifestUrl=url;app.Save();}else manifest.Text=url;}
+        page.Children.Add(Ui.Row(Ui.Button("稳定版更新源",()=>Source(AppReleaseInfo.StableManifestUrl)),Ui.Button("预览版更新源",()=>Source(AppReleaseInfo.PreviewManifestUrl))));
+        page.Children.Add(Ui.Label("留空使用稳定版更新源。预览版更新源包含体验版本；选择来源不会立即下载或安装。",12,Ui.Muted));
+        page.Children.Add(Ui.Button("检查更新",()=>_=app.CheckUpdates()));page.Children.Add(Ui.Button("打开许可证",()=>WindowsServices.Open(Path.Combine(AppContext.BaseDirectory,"LICENSE"))));
     }
 }

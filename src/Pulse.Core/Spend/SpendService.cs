@@ -35,7 +35,7 @@ public sealed class SpendService(IReadOnlyDictionary<string,SpendPrice>? prices=
      foreach(var source in SpendSources.All)
      {
          if(config.EnabledSpendSources is {} selected&&!selected.Contains(source.Id,StringComparer.Ordinal))continue;
-         ct.ThrowIfCancellationRequested(); var paths=SpendSources.ResolvePaths(source,home,environment).ToList();
+         ct.ThrowIfCancellationRequested(); var paths=SpendSources.ResolvePaths(source,home,environment,config.CodexSpendHome).ToList();
          // Explicit imports live under a source-id subdirectory to retain a declared format.
          foreach(var path in config.SpendPaths) paths.Add(Path.Combine(LocalPaths.Expand(path,home),source.Id));
          var found=cache is not null&&source.Id is "claude" or "codex"?cache.Read(source,paths,notes,ct):SpendReaders.Read(source,paths,notes,ct);

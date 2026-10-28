@@ -2,7 +2,7 @@
 
 Pulse Windows is a Windows port based on qunqin24/Pulse 1.12.2, commit b035a7acf1aad9c1b6f9f895197ad1a5f58ea64e. Provider request/response rules, fixtures, service/source catalogs and some translations are adapted from that project. Copyright (c) 2026 qunqin24. Apache License 2.0; see LICENSE. Windows application, storage and platform adaptations are identified in the source and implementation documents.
 
-The upstream `bot-data.json` is not included. Windows animated marks are drawn independently in BotRenderer.cs. No upstream app icon or third-party provider SVG artwork is distributed by this version.
+The upstream `bot-data.json` is not included. Windows animated marks are drawn independently in BotRenderer.cs. The upstream app icon is not distributed. The provider marks listed below are adapted from the upstream SVG artwork.
 
 ## ZstdSharp.Port 0.8.8
 
@@ -15,3 +15,7 @@ Copyright Microsoft Corporation. Distributed under the accompanying Microsoft te
 ## .NET 10
 
 The self-contained release includes the .NET and Windows Desktop runtimes. Their MIT licenses and available third-party notices are copied from the exact restored runtime packs named in Pulse.runtimeconfig.json and preserved under Licenses/Microsoft.*-LICENSE.txt and Licenses/Microsoft.*-THIRD-PARTY-NOTICES.txt. Source and notices: https://github.com/dotnet/runtime and https://github.com/dotnet/wpf .
+
+## Lobe Icons provider marks
+
+Copyright (c) 2023 LobeHub. MIT License; see Licenses/Lobe-Icons-MIT.txt. OpenAI/Codex, Claude, DeepSeek and Z.ai path data comes from @lobehub/icons-static-svg 1.95.1 through qunqin24/Pulse commit fc10fb7f13999d16f27f283c4bd9e83c80a2885d, Sources/Pulse/Resources/{openai,claude,deepseek,zai}.svg. The original SVG coordinates are rendered as WPF geometry in ProviderMark.cs. Names and marks identify compatible services and remain the property of their respective owners.

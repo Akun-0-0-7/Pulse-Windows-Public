@@ -6,10 +6,13 @@ public sealed partial class SettingsWindow : Window
     public string CurrentPage=>current;
     private Border? accountReading;
     private TextBlock? windowStarterStatus;
+    private Button? windowStarterRetryButton;
     private TextBlock? shortcutStatus;
     private readonly DispatcherTimer statusRefresh=new(){Interval=TimeSpan.FromMinutes(5)};
     public SettingsWindow(PulseApp app)
     {
+        Ui.StyleSettingsScrollBars(this);
+        SettingsChrome.Attach(this);
         this.app=app;Title=Localization.Translate("Pulse · 设置");Width=1100;Height=790;MinWidth=850;MinHeight=580;Background=Ui.Bg;Foreground=Ui.Text;FontFamily=new FontFamily("Microsoft YaHei UI");WindowStartupLocation=WindowStartupLocation.CenterScreen;
         var layout=new Grid{Background=Ui.Bg};TextOptions.SetTextFormattingMode(layout,TextFormattingMode.Display);layout.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(230)});layout.ColumnDefinitions.Add(new ColumnDefinition());
         var left=new DockPanel {Background=Ui.Card,Margin=new Thickness(0,0,1,0)};
@@ -21,14 +24,14 @@ public sealed partial class SettingsWindow : Window
     {
         sidebar.Children.Clear();
         foreach(var entry in new (string id,string title)[]{("dashboard","用量总览"),("accounts","服务与账号"),("appearance","外观与圆环"),("position","位置与行为"),("general","通用与快捷键"),("notifications","通知提醒"),("network","网络与刷新"),("spend","Token 消耗"),("reports","用量报告"),("status","服务状态"),("diagnostics","连接诊断"),("extensions","扩展"),("integrations","开发者集成"),("about","关于与更新")}) {
-            if(filter.Length>0&&!entry.title.Contains(filter,StringComparison.OrdinalIgnoreCase))continue;var id=entry.id;var button=Ui.Button(entry.title,()=>Navigate(id));button.HorizontalContentAlignment=HorizontalAlignment.Left;button.Margin=new Thickness(12,0,12,5);button.BorderThickness=new Thickness(0);if(current==id)button.Background=Ui.Brush("#343146");sidebar.Children.Add(button);
+            if(filter.Length>0&&!entry.title.Contains(filter,StringComparison.OrdinalIgnoreCase))continue;var id=entry.id;var button=Ui.Button(entry.title,()=>Navigate(id));button.HorizontalContentAlignment=HorizontalAlignment.Left;button.Margin=new Thickness(12,0,12,5);button.BorderThickness=new Thickness(0);if(current==id)button.Background=Ui.Selection;sidebar.Children.Add(button);
         }
         if(app.Engine.Config.Accounts.Count>0)sidebar.Children.Add(Ui.Label("账号",11,Ui.Muted));
         foreach(var account in app.Engine.Config.Accounts.Where(a=>a.Enabled)) {var label=app.AccountName(account.Id);if(filter.Length>0&&!label.Contains(filter,StringComparison.OrdinalIgnoreCase))continue;var id=account.Id;var button=Ui.Button(label,()=>Navigate("account:"+id));button.Margin=new Thickness(12,0,12,5);button.HorizontalContentAlignment=HorizontalAlignment.Left;button.BorderThickness=new Thickness(0);sidebar.Children.Add(button);}
     }
     public void Navigate(string id)
     {
-        if(!navigating&&id!=current){back.Push(current);forward.Clear();}current=id;accountReading=null;windowStarterStatus=null;page.Children.Clear();BuildSidebar();
+        if(!navigating&&id!=current){back.Push(current);forward.Clear();}current=id;accountReading=null;windowStarterStatus=null;windowStarterRetryButton=null;page.Children.Clear();BuildSidebar();
         if(id.StartsWith("account:")){AccountPage(id[8..]);return;}
         switch(id){case "onboarding":Onboarding();break;case "dashboard":Dashboard();break;case "accounts":Accounts();break;case "appearance":Appearance();break;case "position":Position();break;case "general":General();break;case "notifications":Notifications();break;case "network":Network();break;case "spend":Spend();break;case "reports":Reports();break;case "status":Status();break;case "diagnostics":Diagnostics();break;case "extensions":Extensions();break;case "integrations":Integrations();break;default:About();break;}UpdateStatus();
     }
@@ -39,7 +42,7 @@ public sealed partial class SettingsWindow : Window
     {
         UpdateStatus();
         if(current=="dashboard"&&!app.Engine.IsRefreshing){page.Children.Clear();Dashboard();}
-        else if(accountReading is not null&&current.StartsWith("account:")&&app.Engine.Config.Accounts.FirstOrDefault(a=>a.Id==current[8..]) is {} account){accountReading.Child=RailWindow.DetailContent(app,account);if(windowStarterStatus is not null)windowStarterStatus.Text=app.WindowStarterStatus(account.Id);}
+        else if(accountReading is not null&&current.StartsWith("account:")&&app.Engine.Config.Accounts.FirstOrDefault(a=>a.Id==current[8..]) is {} account){accountReading.Child=RailWindow.DetailContent(app,account,true);if(windowStarterStatus is not null)windowStarterStatus.Text=app.WindowStarterStatus(account.Id);if(windowStarterRetryButton is not null)windowStarterRetryButton.IsEnabled=app.CanRetryWindowStarter(account.Id);}
     }
     public void RefreshPage()=>Navigate(current);
     public void UpdateShortcutStatus(){if(current=="general"&&shortcutStatus is not null)shortcutStatus.Text=string.Join(Environment.NewLine,app.Rail?.ShortcutErrors.Select(Localization.Translate)??[]);}
@@ -59,7 +62,7 @@ public sealed partial class SettingsWindow : Window
     private void Dashboard()
     {
         Header("用量总览","所有读数来自对应服务；详情显示数据来源和读取时间。");var accounts=app.Engine.Config.Accounts.Where(a=>a.Enabled).ToList();if(accounts.Count==0){page.Children.Add(Ui.Button("选择服务",()=>Navigate("onboarding"),true));return;}
-        foreach(var account in accounts){var content=RailWindow.DetailContent(app,account);content.Width=double.NaN;page.Children.Add(Ui.Box(content));}
+        foreach(var account in accounts){var content=RailWindow.DetailContent(app,account,true);content.Width=double.NaN;page.Children.Add(Ui.Box(content));}
         page.Children.Add(Ui.Button("刷新全部",()=>_=app.Engine.RefreshAsync(),true));
     }
     private void Accounts()
@@ -97,10 +100,14 @@ public sealed partial class SettingsWindow : Window
         if(account.ProviderId is "codex" or "claudeCode"&&app.UsesWindowStarterLogin(account)){
             page.Children.Add(Ui.Check("5 小时重置后发送一次 hi 并刷新额度",account.Extra.GetValueOrDefault("windowStarter")=="true",value=>{if(value&&MessageBox.Show("开启后，Pulse 会在 5 小时额度重置时通过本机工具发送一次 hi，并立即刷新额度。该请求会使用账号额度。是否启用？","窗口启动器",MessageBoxButton.YesNo)!=MessageBoxResult.Yes){Navigate(current);return;}account.Extra["windowStarter"]=value?"true":"false";app.Engine.Config.WindowStarterEnabled=app.Engine.Config.Accounts.Any(a=>a.Extra.GetValueOrDefault("windowStarter")=="true");app.Save();}));
             page.Children.Add(Ui.Label("仅处理 5 小时额度；每周重置不另发消息。",12,Ui.Muted));
+            page.Children.Add(Ui.Label("每分钟检查额度；明确的网络或额度错误会自动补发。剩余恢复 100% 时仅发送一次。",12,Ui.Muted));
             windowStarterStatus=Ui.Label(app.WindowStarterStatus(id),12,Ui.Muted);page.Children.Add(windowStarterStatus);
+            windowStarterRetryButton=Ui.Button("再次发送 hi 并刷新额度",()=>_=app.RetryWindowStarterAsync(id));
+            windowStarterRetryButton.IsEnabled=app.CanRetryWindowStarter(id);page.Children.Add(windowStarterRetryButton);
+            page.Children.Add(Ui.Label("超时或中断时，请先查看额度；手动重试可能重复已被服务商接收的请求。自动发送遵守允许时段，手动重试可随时进行。",12,Ui.Muted));
         }
         var reading=app.Engine.Reading(id);if(reading?.Windows.Count>0)AddSelect("圆环主额度",new[]{"automatic"}.Concat(reading.Windows.Select(w=>w.Id)),account.PrimaryWindowId??"automatic",text=>account.PrimaryWindowId=text=="automatic"?null:text);
-        accountReading=Ui.Box(RailWindow.DetailContent(app,account));page.Children.Add(accountReading);
+        accountReading=Ui.Box(RailWindow.DetailContent(app,account,true));page.Children.Add(accountReading);
         var actions=new WrapPanel();if(!string.IsNullOrWhiteSpace(definition?.HelpUrl))actions.Children.Add(Ui.Button("设置帮助",()=>WindowsServices.Open(definition.HelpUrl)));if(!string.IsNullOrWhiteSpace(definition?.UsageUrl))actions.Children.Add(Ui.Button("服务商用量页面",()=>WindowsServices.Open(definition.UsageUrl)));
         actions.Children.Add(Ui.Button("向上移动",()=>{var index=app.Engine.Config.Accounts.IndexOf(account);if(index>0){app.Engine.Config.Accounts.RemoveAt(index);app.Engine.Config.Accounts.Insert(index-1,account);app.Save();}}));actions.Children.Add(Ui.Button("移除账号",async()=>{account.Enabled=false;await app.ClearCredentialsAsync(account);app.Engine.Config.Accounts.Remove(account);app.Save();Navigate("accounts");}));page.Children.Add(actions);
     }

@@ -4,7 +4,11 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 namespace Pulse.Core;
 
-public sealed record UpdateManifest(Version Version,Uri DownloadUri,string Sha256);
+public sealed record UpdateManifest(Version Version,Uri DownloadUri,string Sha256)
+{
+    public string? ReleaseLabel { get; init; }
+    public string VersionText => ReleaseLabel??Version.ToString();
+}
 public sealed record UpdateFile(string RelativePath,long Length,string Sha256);
 public sealed record PreparedUpdate(string Version,string PreparationDirectory,string PackageRoot,IReadOnlyList<UpdateFile> Files,long DownloadBytes,string Sha256);
 public sealed record UpdateLimits(long MaxDownloadBytes=268435456,long MaxExtractedBytes=1073741824,long MaxEntryBytes=268435456,int MaxEntries=10000,int MaxCompressionRatio=250);
@@ -17,8 +21,8 @@ public static class UpdatePackage
         try
         {
             using var document=JsonDocument.Parse(json);var root=document.RootElement;
-            if(root.ValueKind!=JsonValueKind.Object||!Version.TryParse(JsonTools.String(root,"version"),out var version)||version.Build<0||!Uri.TryCreate(JsonTools.String(root,"url"),UriKind.Absolute,out var url))throw new InvalidDataException("更新清单需要有效的 version、url 和 sha256。");
-            var result=new UpdateManifest(version,url,JsonTools.String(root,"sha256")??"");ValidateManifest(result);return result;
+            if(root.ValueKind!=JsonValueKind.Object||!ReleaseVersion.TryParse(JsonTools.String(root,"version"),out var version)||!Uri.TryCreate(JsonTools.String(root,"url"),UriKind.Absolute,out var url))throw new InvalidDataException("更新清单需要有效的 version、url 和 sha256。");
+            var result=new UpdateManifest(version!.NumericVersion,url,JsonTools.String(root,"sha256")??""){ReleaseLabel=version.DisplayVersion};ValidateManifest(result);return result;
         }
         catch(JsonException exception){throw new InvalidDataException("更新清单不是有效 JSON。",exception);}
     }
@@ -26,6 +30,7 @@ public static class UpdatePackage
     {
         RequireHttps(manifest.DownloadUri);
         if(manifest.Version.Build<0||!Regex.IsMatch(manifest.Sha256,"\\A[0-9a-fA-F]{64}\\z"))throw new InvalidDataException("更新清单的版本或 SHA256 校验值无效。");
+        if(manifest.ReleaseLabel is {} label&&(!ReleaseVersion.TryParse(label,out var release)||release!.NumericVersion.Major!=manifest.Version.Major||release.NumericVersion.Minor!=manifest.Version.Minor||release.NumericVersion.Build!=manifest.Version.Build||Math.Max(0,release.NumericVersion.Revision)!=Math.Max(0,manifest.Version.Revision)))throw new InvalidDataException("更新清单的版本标签与数值版本不一致。");
     }
     private static void RequireHttps(Uri uri)
     {
@@ -62,7 +67,7 @@ public static class UpdatePackage
             {
                 await using var input=File.OpenRead(file);entries.Add(new(Path.GetRelativePath(package,file).Replace('\\','/'),input.Length,Convert.ToHexString(await SHA256.HashDataAsync(input,cancellationToken))));
             }
-            var prepared=new PreparedUpdate(manifest.Version.ToString(),preparation,package,entries,downloaded,checksum);File.WriteAllText(Path.Combine(preparation,"prepared-update.json"),JsonSerializer.Serialize(prepared,StorageJson.Options));return prepared;
+            var prepared=new PreparedUpdate(manifest.VersionText,preparation,package,entries,downloaded,checksum);File.WriteAllText(Path.Combine(preparation,"prepared-update.json"),JsonSerializer.Serialize(prepared,StorageJson.Options));return prepared;
         }
         catch
         {
