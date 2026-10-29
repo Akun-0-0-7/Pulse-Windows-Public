@@ -5,7 +5,7 @@ namespace Pulse.Tests;
 
 public static class WindowStarterModelTests
 {
-    private sealed class Fixture:IDisposable
+    internal sealed class Fixture:IDisposable
     {
         public string Root {get;}=Path.Combine(Path.GetTempPath(),"pulse-model-selection-"+Guid.NewGuid().ToString("N"));
         public Dictionary<string,string> Environment {get;}
@@ -23,7 +23,7 @@ public static class WindowStarterModelTests
             };
             if(models is not null)Environment["PULSE_TEST_STARTER_MODELS"]=models;
         }
-        public Task<ProcessResult> Start(CancellationToken ct=default,string? model=null)=>WindowStarter.StartAsync("codex",Root,ct,Path.Combine(AppContext.BaseDirectory,"Pulse.Tests.exe"),Environment,configuredModel:model);
+        public Task<ProcessResult> Start(CancellationToken ct=default,string? model=null,Func<bool>? gate=null)=>WindowStarter.StartAsync("codex",Root,ct,Path.Combine(AppContext.BaseDirectory,"Pulse.Tests.exe"),Environment,configuredModel:model,beforeDispatch:gate);
         public string[] Methods()=>File.Exists(Calls)?File.ReadAllLines(Calls):[];
         public void Dispose()=>Directory.Delete(Root,true);
     }
@@ -64,6 +64,20 @@ public static class WindowStarterModelTests
         var result=await fixture.Start(model:" \t ");
         Assert.Equal("fixture-chat-model",result.Model);Assert.Equal("codexConfig",result.ModelSource);
         Assert.Equal("config/read,exec",string.Join(',',fixture.Methods()));
+    }
+
+    [Check] public static async Task DispatchGateRunsOnlyAfterModelPreflightAndCanPreventExec()
+    {
+        using(var fixture=new Fixture("""{"config":{"model":"gpt-6.1-terra"}}"""))
+        {
+            var calls=0;var result=await fixture.Start(gate:()=>{calls++;return false;});
+            Assert.Equal(1,calls);Assert.Equal("dispatchBlocked",result.Error);
+            Assert.Equal("config/read",string.Join(',',fixture.Methods()));
+        }
+        using(var fixture=new Fixture("RPC_ERROR"))
+        {
+            var calls=0;await fixture.Start(gate:()=>{calls++;return true;});Assert.Equal(0,calls);
+        }
     }
 
     [Check] public static async Task InvalidStarterPreferenceNeverFallsBackToChatModel()

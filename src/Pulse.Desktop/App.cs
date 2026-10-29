@@ -25,6 +25,12 @@ public sealed partial class PulseApp : Application
     private bool readingActivity;
     private bool refreshingStaleReadings;
     private bool startingWindow;
+    public bool StartupEntryNeedsAttention {get;private set;}
+    public void RefreshStartupEntryStatus()
+    {
+        try{var snapshot=StartupConsistencyService.Create().Inspect(Engine.Config.StartWithWindows);StartupEntryNeedsAttention=snapshot.NeedsRepair||snapshot.Startup.State is LaunchEntryState.Unavailable or LaunchEntryState.Unrecognized||snapshot.Shortcut.State is LaunchEntryState.Unavailable or LaunchEntryState.Unrecognized;}
+        catch(Exception e)when(e is IOException or UnauthorizedAccessException or System.Runtime.InteropServices.COMException){StartupEntryNeedsAttention=true;}
+    }
     private bool exiting;
     private readonly Dictionary<string,long> credentialVersions=[];
     public long CredentialVersion(string id)=>credentialVersions.GetValueOrDefault(id);
@@ -53,6 +59,7 @@ public sealed partial class PulseApp : Application
         _=InstanceChannel.ListenAsync(message=>Dispatcher.BeginInvoke(()=>{if(exiting)return;if(message=="settings")ShowSettings();else OpenAccountUri(message);}),Engine.LifetimeToken);
         DispatcherUnhandledException+=(_,eventArgs)=> {Storage.Save("last-error.json",new {at=DateTimeOffset.Now,error=Redaction.Clean(eventArgs.Exception.ToString())}); MessageBox.Show("Pulse 遇到错误，诊断已保存在数据目录。","Pulse"); eventArgs.Handled=true;};
         Localization.Language=Engine.Config.Language;Ui.ApplyTheme(Engine.Config);Alerts.Seen=Storage.Load<HashSet<string>>("alert-memory.json")??[];statusAlerts.Seen=Storage.Load<HashSet<string>>("status-alert-memory.json")??[];
+        if(!startupArguments.Contains("--startup-check"))RefreshStartupEntryStatus();
         tray=new System.Windows.Forms.NotifyIcon {Visible=true,Text="Pulse · AI 额度",Icon=MakeIcon(null)};
         tray.MouseClick+=(_,args)=>{if(args.Button==System.Windows.Forms.MouseButtons.Left) Dispatcher.Invoke(()=>{if(Engine.Config.TrayOpensDashboard)ShowDashboard();else ShowSettings();});};
         tray.BalloonTipClicked+=(_,_)=>Dispatcher.Invoke(()=>{ShowSettings(recapBalloon?"reports":"dashboard");recapBalloon=false;});

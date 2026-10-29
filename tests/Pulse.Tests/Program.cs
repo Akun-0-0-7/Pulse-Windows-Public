@@ -12,6 +12,8 @@ public static class Program
 {
     public static async Task<int> Main(string[] args)
     {
+        if(args is ["--version"]&&Environment.GetEnvironmentVariable("PULSE_TEST_WINDOW_STARTER_FIXTURE")=="true")
+        {if(Environment.GetEnvironmentVariable("PULSE_TEST_STARTER_CALLS") is {} calls)File.AppendAllText(calls,"version\n");Console.WriteLine("codex-cli 0.165.0-test");return 0;}
         if(args is ["exec", ..]&&Environment.GetEnvironmentVariable("PULSE_TEST_WINDOW_STARTER_FIXTURE")=="true")
         {
             if(Environment.GetEnvironmentVariable("PULSE_TEST_STARTER_CALLS") is {} calls)File.AppendAllText(calls,"exec\n");

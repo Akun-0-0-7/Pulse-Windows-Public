@@ -20,6 +20,15 @@ public static class WindowResetTests
 
     private static UsageWindow FiveHour(DateTimeOffset at) => new() { Id = "primary", Kind = "fiveHour", UsedPercent = 20, ResetsAt = at };
 
+    [Check] public static void DailyLimitBlockedDispatchWaitsUntilNextLocalDay()
+    {
+        var account=Account();var coordinator=new WindowResetCoordinator();
+        var job=coordinator.Claim(account,Reading(account,Reset,FiveHour(Reset)),Reset,0,0)!;
+        coordinator.Complete(job,new("failed",false,null,null,"dailyLimit"),Reset);
+        var pending=coordinator.State.Accounts[account.Id].Pending!;
+        Assert.Equal("retry",pending.Status);Assert.Equal(new DateTimeOffset(Reset.Date.AddDays(1),Reset.Offset),pending.NextAttemptAt);
+    }
+
     [Check] public static void ExactResetClaimsOnlyOnceAndSurvivesJsonReload()
     {
         var account = Account();
