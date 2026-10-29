@@ -23,12 +23,15 @@ internal static class RailCard
         {
             foreach(var window in reading.Windows)
             {
-                var row=new StackPanel{Margin=new Thickness(0,0,0,reading.Windows.Count>1?14*s:0)};
+                var row=new StackPanel{Tag="quota-window",Margin=new Thickness(0,0,0,reading.Windows.Count>1?14*s:0)};
                 row.Children.Add(new TextBlock{Text=window.Label??(window.Kind=="weekly"?Localization.Translate("每周限额"):Ui.WindowName(window)),FontSize=11.5*s,Foreground=white,Height=14*s,Margin=new Thickness(0,0,0,7*s)});
                 row.Children.Add(new Meter(window.UsedPercent,config,account.AccentColor,window.Exhausted,inSettings){Tag="quota-meter",Height=6*s,Margin=new Thickness(0,0,0,7*s)});
-                var footer=new Grid{Height=14*s};footer.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});footer.ColumnDefinitions.Add(new ColumnDefinition());
-                var used=new TextBlock{Text=Localization.Format("已用 {0}%",UsageFigures.Percent(window.UsedPercent)),Foreground=white,FontSize=11.5*s};footer.Children.Add(used);
-                var reset=new TextBlock{Text=Reset(window.ResetsAt),Foreground=muted,FontSize=11.5*s,HorizontalAlignment=HorizontalAlignment.Right};Grid.SetColumn(reset,1);footer.Children.Add(reset);row.Children.Add(footer);
+                var known=double.IsFinite(window.UsedPercent)&&window.UsedPercent>=0;
+                var footer=new WrapPanel();
+                var used=new TextBlock{Tag="quota-used",Text=known?Localization.Format("已用 {0}%",UsageFigures.Percent(window.UsedPercent)):Localization.Translate("额度未知"),Foreground=white,FontSize=11.5*s,Margin=new Thickness(0,0,12*s,0)};footer.Children.Add(used);
+                var remaining=new TextBlock{Tag="quota-remaining",Text=known?Localization.Format("剩余 {0}%",UsageFigures.Percent(window.Exhausted?100:window.UsedPercent,true)):"",Foreground=muted,FontSize=11.5*s};footer.Children.Add(remaining);
+                row.Children.Add(footer);
+                var reset=new TextBlock{Tag="quota-reset",Text=Reset(window.ResetsAt),Foreground=muted,FontSize=11.5*s,TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,3*s,0,0)};row.Children.Add(reset);
                 if(window.Estimated)row.Children.Add(Label("按所选基准估算",10,muted));
                 panel.Children.Add(row);
             }

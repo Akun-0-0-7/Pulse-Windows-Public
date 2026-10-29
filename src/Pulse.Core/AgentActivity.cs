@@ -41,7 +41,7 @@ public sealed class BurnForecast
 public static partial class WindowStarter
 {
     public static bool IsDue(DateTimeOffset reset,DateTimeOffset now,int startHour,int endHour)=>now>=reset&&(startHour==endHour||startHour<endHour&&now.Hour>=startHour&&now.Hour<endHour||startHour>endHour&&(now.Hour>=startHour||now.Hour<endHour));
-    public static async Task<ProcessResult> StartAsync(string provider,string dataRoot,CancellationToken cancellationToken=default,string? configuredExecutable=null,Dictionary<string,string>? environment=null,string? configuredModel=null)
+    public static async Task<ProcessResult> StartAsync(string provider,string dataRoot,CancellationToken cancellationToken=default,string? configuredExecutable=null,Dictionary<string,string>? environment=null,string? configuredModel=null,Func<bool>? beforeDispatch=null)
     {
         var name=provider=="codex"?"codex":"claude";
         var executable=provider=="codex"?CodexToolLocator.Find(configuredExecutable,environment):
@@ -51,6 +51,7 @@ public static partial class WindowStarter
         if(provider=="codex"&&model is null)return new(-1,"","modelSelectionUnavailable",false);
         string[] args=provider=="codex"?["exec","--model",model!.Model,"--ignore-user-config","--json","--ephemeral","--skip-git-repo-check","-s","read-only","-C",folder,"hi"]:["-p","hi","--model","haiku","--no-session-persistence","--tools","","--strict-mcp-config","--setting-sources","project"];
         cancellationToken.ThrowIfCancellationRequested();
+        if(beforeDispatch is not null&&!beforeDispatch())return new(-1,"","dispatchBlocked",false){Model=model?.Model,ModelSource=model?.Source};
         var result=await ProcessRunner.RunAsync(executable,args,TimeSpan.FromSeconds(120),cancellationToken,folder,environment);
         return result with{Model=model?.Model,ModelSource=model?.Source};
     }

@@ -18,6 +18,7 @@ public sealed partial class PulseApp
     private void InitializeWindowStarter()
     {
         LoadWindowResetState();
+        LoadWindowStarterLedger();
         windowStarterReports=Storage.Load<Dictionary<string,WindowStarterReport>>("window-starter-last.json")??[];
         foreach(var report in windowStarterReports.Values.Where(r=>r is not null))if(report.Status=="sending")report.Status="interrupted";
         foreach(var (id,report) in windowStarterReports)
@@ -99,6 +100,8 @@ public sealed partial class PulseApp
         var account=Engine.Config.Accounts.FirstOrDefault(a=>a.Id==accountId);
         if(account is null||!CanStartWindow(account))return Localization.Translate("自动发送已关闭。");
         if(windowResetStateUnavailable)return Localization.Translate("无法读取执行记录，自动发送已暂停。");
+        if(windowStarterLedgerUnavailable)return Localization.Translate("无法读取或保存发送计数，自动和手动发送均已暂停。");
+        if(!WindowStarterBudgetAvailable(account))return Localization.Translate("今日 hi 尝试次数已达上限，次日恢复；也可调整每日上限。");
         var pending=windowResets.State.Accounts.GetValueOrDefault(accountId)?.Pending;
         if(pending?.Status is "retry" or "quota")
         {
@@ -151,7 +154,7 @@ public sealed partial class PulseApp
             }
             foreach(var account in accounts)
             {
-                if(!CanStartWindow(account))continue;
+                if(!CanStartWindow(account)||!WindowStarterBudgetAvailable(account))continue;
                 if(CredentialVersion(account.Id)!=versions[account.Id]){nextWindowStarterRefreshAt=DateTimeOffset.MinValue;continue;}
                 WindowResetJob? job;
                 try{job=ClaimWindowReset(account,Engine.Reading(account.Id),windowStarterNow());}
@@ -171,7 +174,7 @@ public sealed partial class PulseApp
     }
 
     public bool CanRetryWindowStarter(string accountId)=>!startingWindow&&!windowResetStateUnavailable&&
-        Engine.Config.Accounts.FirstOrDefault(a=>a.Id==accountId) is {} account&&CanStartWindow(account)&&
+        Engine.Config.Accounts.FirstOrDefault(a=>a.Id==accountId) is {} account&&CanStartWindow(account)&&WindowStarterBudgetAvailable(account)&&
         (windowResets.State.Accounts.GetValueOrDefault(accountId)?.Pending?.Status!="success"||
             windowResets.CanClaimManual(account,Engine.Reading(accountId),windowStarterNow()))&&
         !(windowResets.State.Accounts.GetValueOrDefault(accountId)?.Pending is null&&
@@ -225,6 +228,8 @@ public sealed partial class PulseApp
     private async Task ExecuteWindowStarterJobAsync(WindowResetJob job,long version)
     {
         ProcessResult? result=null;
+        WindowStarterAttempt? attempt=null;
+        string? blockedReason=null;
         WindowStarterReceipt receipt;
         SetWindowStarterReport(job,"sending");
         try
@@ -233,14 +238,23 @@ public sealed partial class PulseApp
             var current=Engine.Config.Accounts.FirstOrDefault(a=>a.Id==job.AccountId);
             if(current is null||current.ProviderId!=job.ProviderId||!CanStartWindow(current)||CredentialVersion(current.Id)!=version)
                 throw new WindowStarterAccountChangedException();
-            result=windowStarterSend is {} send?await send(current,Engine.LifetimeToken):
-                await WindowStarter.StartAsync(current.ProviderId,Storage.Root,Engine.LifetimeToken,current.Extra.GetValueOrDefault("executable"),ProxyEnvironment.ForTool(Engine.Config),configuredModel:current.Extra.GetValueOrDefault("windowStarterModel"));
-            receipt=WindowStarter.Evaluate(job.ProviderId,result);
+            var selectedModel=current.Extra.GetValueOrDefault("windowStarterModel");
+            var selectedExecutable=current.Extra.GetValueOrDefault("executable");var selectedProxy=(Engine.Config.ProxyMode,Engine.Config.ProxyAddress);
+            bool Reserve()
+            {
+                if(!ReferenceEquals(Engine.Config.Accounts.FirstOrDefault(a=>a.Id==job.AccountId),current)||!CanStartWindow(current)||CredentialVersion(current.Id)!=version||selectedModel!=current.Extra.GetValueOrDefault("windowStarterModel")||selectedExecutable!=current.Extra.GetValueOrDefault("executable")||selectedProxy!=(Engine.Config.ProxyMode,Engine.Config.ProxyAddress)){blockedReason="cancelled";return false;}
+                try{attempt=ReserveWindowStarterAttempt(current);if(attempt is null)blockedReason="dailyLimit";return attempt is not null;}
+                catch(Exception e)when(e is IOException or UnauthorizedAccessException){windowStarterLedgerUnavailable=true;blockedReason="storageError";return false;}
+            }
+            result=windowStarterSend is {} send?(Reserve()?await send(current,Engine.LifetimeToken):new(-1,"","dispatchBlocked",false)):
+                await WindowStarter.StartAsync(current.ProviderId,Storage.Root,Engine.LifetimeToken,current.Extra.GetValueOrDefault("executable"),ProxyEnvironment.ForTool(Engine.Config),configuredModel:selectedModel,beforeDispatch:Reserve);
+            receipt=blockedReason is not null?new("failed",false,null,null,blockedReason):WindowStarter.Evaluate(job.ProviderId,result);
         }
         catch(WindowStarterAccountChangedException){receipt=new("failed",false,null,null,"cancelled");}
         catch(OperationCanceledException)when(exiting||Engine.LifetimeToken.IsCancellationRequested){receipt=new("failed",false,null,null,"interrupted");}
         catch(Exception exception)when(exception is not OutOfMemoryException){receipt=new("failed",false,null,null,"failed");}
 
+        CompleteWindowStarterAttempt(attempt,receipt,result);
         var before=JsonSerializer.Serialize(windowResets.State,StorageJson.Options);
         try
         {

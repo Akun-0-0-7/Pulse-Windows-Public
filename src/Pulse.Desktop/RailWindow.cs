@@ -21,10 +21,10 @@ public sealed partial class RailWindow : Window
         surface.PreviewMouseMove+=(_,e)=>{if(e.LeftButton==MouseButtonState.Pressed&&!dragging&&(e.GetPosition(this)-press).Length>6){dragging=true;idle.Stop();detailDismiss.Stop();CloseDetail(false);railMotion.SnapTo(collapsed?0:1);try{DragMove();}catch(InvalidOperationException){}finally{dragging=false;RememberPlacement();UpdateAutoCollapse();}}};
         SourceInitialized+=(_,_)=> {var handle=new WindowInteropHelper(this).Handle; var source=HwndSource.FromHwnd(handle);source.AddHook(Hook);ApplySettings();};
         Loaded+=(_,_)=>{ApplySettings();};
-        screenTick.Tick+=(_,_)=> {if(!app.Engine.Config.ShowPanel)return;var screen=System.Windows.Forms.Screen.FromHandle(new WindowInteropHelper(this).Handle); var hide=app.Engine.Config.HideFullscreen&&WindowsServices.IsFullscreen(screen)&&WindowsServices.GetForegroundWindow()!=new WindowInteropHelper(this).Handle; SetFullscreenHidden(hide); if(app.Engine.Config.FollowDisplay&&!dragging&&detail is null) {var active=System.Windows.Forms.Screen.FromPoint(System.Windows.Forms.Cursor.Position); if(active.DeviceName!=screen.DeviceName){var config=app.Engine.Config;RememberDisplay(screen);config.PanelDisplay=active.DeviceName;if(config.DisplayPlacements.TryGetValue(active.DeviceName,out var saved))config.DockEdge=saved.Edge;app.Engine.Save();Place(active);}} if(!System.Windows.Forms.Screen.AllScreens.Any(s=>s.DeviceName==app.Engine.Config.PanelDisplay)&&app.Engine.Config.PanelDisplay is not null)Place();UpdateAutoCollapse(); foreach(var child in rings.Children.OfType<FrameworkElement>())child.InvalidateVisual();}; screenTick.Start();
+        screenTick.Tick+=(_,_)=> {if(!app.Engine.Config.ShowPanel)return;var screen=System.Windows.Forms.Screen.FromHandle(new WindowInteropHelper(this).Handle); var hide=app.Engine.Config.HideFullscreen&&WindowsServices.IsFullscreen(screen)&&WindowsServices.GetForegroundWindow()!=new WindowInteropHelper(this).Handle; SetFullscreenHidden(hide); if(app.Engine.Config.FollowDisplay&&!dragging&&detail is null) {var active=System.Windows.Forms.Screen.FromPoint(System.Windows.Forms.Cursor.Position); if(active.DeviceName!=screen.DeviceName){var config=app.Engine.Config;RememberDisplay(screen);config.PanelDisplay=active.DeviceName;if(config.DisplayPlacements.TryGetValue(active.DeviceName,out var saved))config.DockEdge=saved.Edge;app.Engine.Save();Place(active);}} if(!System.Windows.Forms.Screen.AllScreens.Any(s=>s.DeviceName==app.Engine.Config.PanelDisplay)&&app.Engine.Config.PanelDisplay is not null)Place();UpdateAutoCollapse(); if(app.Engine.Config.ShowClock&&!fullscreenHidden&&railMotion.Value>0)foreach(var child in rings.Children.OfType<FrameworkElement>())child.InvalidateVisual();}; screenTick.Start();
         SizeChanged+=(_,_)=>QueuePlacement();
         DetailCharts.CodexUpdated+=CodexUpdated;
-        animation.Tick+=(_,_)=>{if(app.Engine.Config.ShowPanel&&(app.Engine.Config.AnimatedMarks||app.Engine.IsRefreshing||app.Activities.Values.Any(active=>active)))foreach(var tile in rings.Children.OfType<RingTile>())tile.InvalidateVisual();};animation.Start();
+        animation.Tick+=(_,_)=>{if(app.Engine.Config.ShowPanel&&!fullscreenHidden&&railMotion.Value>0)foreach(var tile in rings.Children.OfType<RingTile>().Where(tile=>tile.NeedsAnimation))tile.InvalidateVisual();};animation.Start();
         Closing+=(_,_)=>{closing=true;screenTick.Stop();idle.Stop();animation.Stop();DetailCharts.CodexUpdated-=CodexUpdated;DisposeMotion();var handle=new WindowInteropHelper(this).Handle;WindowsServices.UnregisterHotKey(handle,1);WindowsServices.UnregisterHotKey(handle,2);};
     }
     private IntPtr Hook(IntPtr hwnd,int message,IntPtr wParam,IntPtr lParam,ref bool handled)
@@ -90,11 +90,35 @@ public sealed partial class RailWindow : Window
         RailScreen.Move(this,point);
     }
 }
-public sealed class RingTile(AccountConfig account,UsageReading? reading,ProviderDefinition? definition,AppConfig config,bool fetching,bool active=false) : FrameworkElement
+public sealed class RingTile : FrameworkElement
 {
+    private readonly AccountConfig account;
+    private readonly AppConfig config;
+    private UsageReading? reading;
+    private ProviderDefinition? definition;
+    private bool fetching,active;
+    internal bool NeedsAnimation=>config.AnimatedMarks||fetching||active;
+    public RingTile(AccountConfig account,UsageReading? reading,ProviderDefinition? definition,AppConfig config,bool fetching,bool active=false)
+    {this.account=account;this.reading=reading;this.definition=definition;this.config=config;this.fetching=fetching;this.active=active;UpdateTooltip();}
     public void Update(UsageReading? value,ProviderDefinition? provider,bool refreshing,bool working)
     {
-        reading=value;definition=provider;fetching=refreshing;active=working;InvalidateVisual();
+        reading=value;definition=provider;fetching=refreshing;active=working;UpdateTooltip();InvalidateVisual();
+    }
+    private void UpdateTooltip()
+    {
+        var first=UsageEngine.Headline(account,reading);
+        if(first is null){ToolTip=Localization.Translate("暂无额度数据");return;}
+        string Line(string ring,UsageWindow window,bool remaining,bool secondary=false)
+        {
+            var known=double.IsFinite(window.UsedPercent)&&window.UsedPercent>=0;
+            var percent=secondary&&window.Exhausted?100:window.UsedPercent;
+            var value=known?Localization.Format(remaining?"剩余 {0}%":"已用 {0}%",UsageFigures.Percent(percent,remaining)):Localization.Translate("额度未知");
+            return Localization.Format("{0}：{1} · {2}",Localization.Translate(ring),window.Label??Ui.WindowName(window),value);
+        }
+        var lines=new List<string>{Line("外环",first,config.ShowRemaining)};
+        if(config.ShowSecondaryRing&&reading?.Windows.Where(w=>w.Id!=first.Id).OrderByDescending(w=>w.UsedPercent).FirstOrDefault() is {} second)
+            lines.Add(Line("内环",second,config.SecondaryRingShowRemaining,true));
+        ToolTip=string.Join(Environment.NewLine,lines);
     }
     protected override Size MeasureOverride(Size availableSize)
     {

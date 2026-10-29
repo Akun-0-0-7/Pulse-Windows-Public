@@ -31,15 +31,18 @@ public sealed partial class SettingsWindow : Window
     }
     public void Navigate(string id)
     {
+        ResetStarterDiagnostics();starterUsageSummary=null;
         if(!navigating&&id!=current){back.Push(current);forward.Clear();}current=id;accountReading=null;windowStarterStatus=null;windowStarterRetryButton=null;page.Children.Clear();BuildSidebar();
         if(id.StartsWith("account:")){AccountPage(id[8..]);return;}
         switch(id){case "onboarding":Onboarding();break;case "dashboard":Dashboard();break;case "accounts":Accounts();break;case "appearance":Appearance();break;case "position":Position();break;case "general":General();break;case "notifications":Notifications();break;case "network":Network();break;case "spend":Spend();break;case "reports":Reports();break;case "status":Status();break;case "diagnostics":Diagnostics();break;case "extensions":Extensions();break;case "integrations":Integrations();break;default:About();break;}UpdateStatus();
     }
     private void GoBack(){if(back.Count==0)return;forward.Push(current);navigating=true;Navigate(back.Pop());navigating=false;}
     private void GoForward(){if(forward.Count==0)return;back.Push(current);navigating=true;Navigate(forward.Pop());navigating=false;}
-    public void UpdateStatus(){status.Text=Localization.Translate(app.Engine.IsRefreshing?"正在读取所选服务…":$"{app.Engine.Config.Accounts.Count(a=>a.Enabled)} 个账号已启用");}
+    public void UpdateStatus(){status.Text=Localization.Translate(app.Engine.IsRefreshing?"正在读取所选服务…":$"{app.Engine.Config.Accounts.Count(a=>a.Enabled)} 个账号已启用")+(app.StartupEntryNeedsAttention?"\n"+Localization.Translate("启动入口需检查：关于与更新"):"");}
     public void UpdateReadings()
     {
+        updateStarterDiagnostics?.Invoke();
+        if(starterUsageSummary is not null&&current.StartsWith("account:"))starterUsageSummary.Text=app.WindowStarterUsageSummary(current[8..]);
         UpdateStatus();
         if(current=="dashboard"&&!app.Engine.IsRefreshing){page.Children.Clear();Dashboard();}
         else if(accountReading is not null&&current.StartsWith("account:")&&app.Engine.Config.Accounts.FirstOrDefault(a=>a.Id==current[8..]) is {} account){accountReading.Child=RailWindow.DetailContent(app,account,true);if(windowStarterStatus is not null)windowStarterStatus.Text=app.WindowStarterStatus(account.Id);if(windowStarterRetryButton is not null)windowStarterRetryButton.IsEnabled=app.CanRetryWindowStarter(account.Id);}
@@ -102,6 +105,7 @@ public sealed partial class SettingsWindow : Window
             page.Children.Add(Ui.Label("仅处理 5 小时额度；每周重置不另发消息。",12,Ui.Muted));
             page.Children.Add(Ui.Label("每分钟检查额度；明确的网络或额度错误会自动补发。剩余恢复 100% 时仅发送一次。",12,Ui.Muted));
             if(account.ProviderId=="codex")WindowStarterModel(account);
+            WindowStarterUsageSettings(account);
             windowStarterStatus=Ui.Label(app.WindowStarterStatus(id),12,Ui.Muted);page.Children.Add(windowStarterStatus);
             windowStarterRetryButton=Ui.Button("再次发送 hi 并刷新额度",()=>_=app.RetryWindowStarterAsync(id));
             windowStarterRetryButton.IsEnabled=app.CanRetryWindowStarter(id);page.Children.Add(windowStarterRetryButton);

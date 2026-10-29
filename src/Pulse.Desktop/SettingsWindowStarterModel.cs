@@ -20,12 +20,13 @@ public sealed partial class SettingsWindow
             if(model.Length==0)account.Extra.Remove("windowStarterModel");
             else account.Extra["windowStarterModel"]=model;
             if(model.Length==0?hadModel:before!=model)app.Save();
-            input.Text=model;status.Text="";
+            input.Text=model;status.Text="";updateStarterDiagnostics?.Invoke();
         }
         var apply=Ui.Button("应用",Commit);apply.Tag="window-starter-model-apply";
         input.KeyDown+=(_,e)=>{if(e.Key==Key.Enter){Commit();e.Handled=true;}};
         input.LostKeyboardFocus+=(_,_)=>Commit();
         page.Children.Add(input);page.Children.Add(apply);page.Children.Add(status);
         page.Children.Add(Ui.Label("只用于自动发送和手动补发 hi，不改变 Codex 聊天模型。",11,Ui.Muted));
+        WindowStarterDiagnostics(account);
     }
 }

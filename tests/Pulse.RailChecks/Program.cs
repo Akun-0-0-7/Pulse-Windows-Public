@@ -38,6 +38,9 @@ internal static partial class Program
         var data=Path.Combine(output,"synthetic-data");Environment.SetEnvironmentVariable("PULSE_DATA_DIR",data);var storage=new AppStorage(data);var account=new AccountConfig{Id="primary-demo",ProviderId="codex",Enabled=true,Detailed=true};storage.SaveConfig(new AppConfig{Accounts=[account]});
         storage.SaveCache([new(){AccountId=account.Id,ProviderId="codex",Plan="cached-plan",ObservedAt=DateTimeOffset.UtcNow,ErrorCode="unreachable",ErrorMessage="cached-connection-error"}]);
         var app=new PulseApp();account=app.Engine.Config.Accounts[0];
+        if(args.Contains("--quota-clarity-only")){QuotaClarityChecks(app);app.Shutdown();return 0;}
+        if(args.Contains("--startup-consistency-only")){StartupConsistencyChecks();app.Shutdown();return 0;}
+        if(args.Contains("--performance-only")){PerformanceChecks(output);app.Shutdown();return 0;}
         if(args.Contains("--secondary-ring-only"))
         {
             try{SecondaryRingChecks(app);app.Shutdown();return 0;}
@@ -109,6 +112,9 @@ internal static partial class Program
         AppearanceColorChecks(app);
         DockProgressChecks(app);
         SecondaryRingChecks(app);
+        QuotaClarityChecks(app);
+        StartupConsistencyChecks();
+        PerformanceChecks(output);
         SelectorContrastChecks(app);
         ScrollbarContrastChecks(app);
         SettingsChromeChecks(app);
@@ -210,6 +216,15 @@ internal static partial class Program
             if(account.Extra.GetValueOrDefault("windowStarterModel")!="gpt-6.1-terra"||Saved()!="gpt-6.1-terra"||Input().Text!="gpt-6.1-terra")throw new Exception("Applying a starter model did not trim and persist it.");
             settings.Navigate("network");settings.Navigate("account:"+account.Id);
             if(Input().Text!="gpt-6.1-terra")throw new Exception("Reopening account settings lost the dedicated starter model.");
+            var next=Descendants((DependencyObject)settings.Content).OfType<TextBlock>().Single(t=>Equals(t.Tag,"starter-next-model"));
+            if(!next.Text.Contains("gpt-6.1-terra")||!Descendants((DependencyObject)settings.Content).OfType<Button>().Any(b=>Equals(b.Tag,"starter-preflight-check")))throw new Exception("Current model and non-sending check were not visible independently of history.");
+            var limit=Descendants((DependencyObject)settings.Content).OfType<TextBox>().Single(t=>Equals(t.Tag,"starter-daily-limit"));
+            var applyLimit=Descendants((DependencyObject)settings.Content).OfType<Button>().Single(b=>Equals(b.Tag,"starter-daily-limit-apply"));
+            limit.Text="6";applyLimit.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            if(app.WindowStarterDailyLimit(account)!=6||app.Storage.LoadConfig().Accounts.Single(a=>a.Id==account.Id).Extra.GetValueOrDefault("windowStarterDailyLimit")!="6")throw new Exception("Daily cap did not persist.");
+            limit.Text="-1";applyLimit.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));if(app.WindowStarterDailyLimit(account)!=6)throw new Exception("Invalid cap overwrote saved value.");
+            account.Extra.Remove("windowStarterDailyLimit");app.Save();
+            WindowStarterDiagnosticsChecks(app,settings,account);
             foreach(var invalid in new[]{"--model","gpt 6.1 terra",new string('a',129)})
             {
                 Input().Text=invalid;Apply().RaiseEvent(new RoutedEventArgs(Button.ClickEvent));

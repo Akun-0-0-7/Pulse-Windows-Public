@@ -127,6 +127,11 @@ public sealed class WindowResetCoordinator
             accountState.LastCompletedAt = now;
             accountState.FullQuotaLatched = true;
         }
+        else if(receipt.FailureKind=="dailyLimit")
+        {
+            pending.Status="retry";
+            pending.NextAttemptAt=new DateTimeOffset(now.Date.AddDays(1),now.Offset);
+        }
         else if (receipt.FailureKind is "network" or "quota")
         {
             pending.Status = receipt.FailureKind == "quota" ? "quota" : "retry";

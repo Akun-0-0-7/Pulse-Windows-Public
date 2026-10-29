@@ -19,6 +19,8 @@ internal static partial class Program
         var unavailable=Field<bool>(app,"windowResetStateUnavailable");
         var path=Path.Combine(app.Storage.Root,"window-starter-state.json");var original=File.Exists(path)?File.ReadAllBytes(path):null;
         var delegates=new Dictionary<string,object?>();
+        var usagePath=Path.Combine(app.Storage.Root,"window-starter-usage.json");var usageOriginal=File.Exists(usagePath)?File.ReadAllBytes(usagePath):null;
+        var ledger=Field<WindowStarterLedger>(app,"windowStarterLedger");var ledgerUnavailable=Field<bool>(app,"windowStarterLedgerUnavailable");
         try
         {
             foreach(var key in environment.Keys)Environment.SetEnvironmentVariable(key,null);
@@ -56,6 +58,7 @@ internal static partial class Program
                 SetField(app,"windowStarterReports",new Dictionary<string,PulseApp.WindowStarterReport>());
                 config.WindowStarterStartHour=0;config.WindowStarterEndHour=0;
                 sends=0;refreshes=0;weeklyBlocked=false;
+                SetField(app,"windowStarterLedger",new WindowStarterLedger());SetField(app,"windowStarterLedgerUnavailable",false);account.Extra.Remove("windowStarterDailyLimit");
             }
             void RunTask(string method,params object[] args)
             {
@@ -73,6 +76,18 @@ internal static partial class Program
             RunTask("StartDueWindows");Equal(1,sends,"New automatic cycle waits outside allowed hours");
             if(!app.CanRetryWindowStarter(account.Id))throw new Exception("A confirmed new cycle did not enable the manual action outside automatic hours.");
             RunTask("RetryWindowStarterAsync",account.Id);Equal(2,sends,"New manual cycle after prior success");
+
+            Reset();account.Extra["windowStarterDailyLimit"]="2";result=new(1,"","dns lookup failed",false);
+            RunTask("StartDueWindows");RunTask("RetryWindowStarterAsync",account.Id);RunTask("RetryWindowStarterAsync",account.Id);
+            Equal(2,sends,"Automatic and manual attempts share daily cap");
+            Invoke(app,"LoadWindowStarterLedger");now=now.AddMinutes(5);RunTask("StartDueWindows");Equal(2,sends,"Restart must not reset daily cap");
+            if(!app.WindowStarterUsageSummary(account.Id).Contains("消耗未确认"))throw new Exception("Unknown token use was presented as zero.");
+            now=now.AddDays(1);RunTask("StartDueWindows");Equal(3,sends,"Next local day permits retry");
+            Reset();File.WriteAllText(usagePath,"{}");Invoke(app,"LoadWindowStarterLedger");RunTask("RetryWindowStarterAsync",account.Id);Equal(0,sends,"Corrupt usage ledger must not reset quota");
+            if(!app.WindowStarterStatus(account.Id).Contains("计数"))throw new Exception("Corrupt usage ledger lacks explanation.");
+            Reset();if(File.Exists(usagePath))File.Delete(usagePath);Directory.CreateDirectory(usagePath);
+            try{RunTask("RetryWindowStarterAsync",account.Id);Equal(0,sends,"Failed daily reservation must prevent dispatch");}
+            finally{Directory.Delete(usagePath);}
 
             Reset();result=new(1,"","dns lookup failed",false);RunTask("StartDueWindows");Equal(1,sends,"Initial network rejection");
             Invoke(app,"LoadWindowResetState");
@@ -134,6 +149,9 @@ internal static partial class Program
             foreach(var pair in delegates)typeof(PulseApp).GetField(pair.Key,BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(app,pair.Value);
             SetField(app,"windowStarterAuthReader",auth);SetField(app,"windowResets",coordinator);SetField(app,"savedWindowResetState",saved);SetField(app,"windowResetStateUnavailable",unavailable);
             SetField(app,"windowStarterReports",reports);
+            SetField(app,"windowStarterLedger",ledger);SetField(app,"windowStarterLedgerUnavailable",ledgerUnavailable);
+            if(Directory.Exists(usagePath))Directory.Delete(usagePath);
+            if(usageOriginal is null){if(File.Exists(usagePath))File.Delete(usagePath);}else File.WriteAllBytes(usagePath,usageOriginal);
             if(Directory.Exists(path))Directory.Delete(path);
             if(original is null){if(File.Exists(path))File.Delete(path);}else File.WriteAllBytes(path,original);
             config.Accounts=accounts;config.WindowStarterEnabled=enabled;config.WindowStarterStartHour=start;config.WindowStarterEndHour=end;

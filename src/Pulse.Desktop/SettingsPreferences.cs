@@ -6,6 +6,8 @@ public sealed partial class SettingsWindow
         var config=app.Engine.Config;Header("外观与圆环","调整浮动栏的读数、颜色和尺寸。");AddCheck("显示剩余额度",config.ShowRemaining,value=>config.ShowRemaining=value);AddCheck("显示第二条额度内环",config.ShowSecondaryRing,value=>config.ShowSecondaryRing=value);
         var secondaryMode=Ui.Check("内圈显示剩余额度",config.SecondaryRingShowRemaining,value=>{config.SecondaryRingShowRemaining=value;app.SaveAppearance();});secondaryMode.Tag="secondary-ring-show-remaining";page.Children.Add(secondaryMode);
         page.Children.Add(Ui.Label("开启显示剩余，关闭显示已用；只影响第二条内圈。",12,Ui.Muted));
+        var allRemaining=Ui.Button("内外环全部显示剩余",()=>{config.ShowRemaining=true;config.SecondaryRingShowRemaining=true;app.SaveAppearance();Navigate("appearance");});
+        allRemaining.Tag="quota-all-remaining";page.Children.Add(allRemaining);
         AddCheck("显示额度窗口时间弧",config.ShowClock,value=>config.ShowClock=value);AddCheck("分段进度条",config.SegmentedBars,value=>config.SegmentedBars=value);AddCheck("使用动画机器人标记",config.AnimatedMarks,value=>config.AnimatedMarks=value);
         page.Children.Add(Ui.Label("主题",13,Ui.Muted));page.Children.Add(Ui.Select(["dark","light","glass"],config.Theme,value=>{config.Theme=value;app.SaveAppearance();Navigate("appearance");}));
         AppearanceColors();
@@ -58,5 +60,6 @@ public sealed partial class SettingsWindow
         page.Children.Add(Ui.Row(Ui.Button("稳定版更新源",()=>Source(AppReleaseInfo.StableManifestUrl)),Ui.Button("预览版更新源",()=>Source(AppReleaseInfo.PreviewManifestUrl))));
         page.Children.Add(Ui.Label("留空使用稳定版更新源。预览版更新源包含体验版本；选择来源不会立即下载或安装。",12,Ui.Muted));
         page.Children.Add(Ui.Button("检查更新",()=>_=app.CheckUpdates()));page.Children.Add(Ui.Button("打开许可证",()=>WindowsServices.Open(Path.Combine(AppContext.BaseDirectory,"LICENSE"))));
+        StartupConsistency();
     }
 }
