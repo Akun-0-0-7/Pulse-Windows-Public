@@ -470,7 +470,7 @@
   "上次处理：发送已中断，可手动重试 · {0}": "Last run: sending was interrupted; a manual retry is available · {0}",
   "上次处理：未确认请求完成，请先查看额度，可手动重试 · {0}": "Last run: completion was not confirmed; check usage first, then retry manually if needed · {0}",
   "未发送：请等待最新可用额度，或确认本轮是否已成功。 · {0}": "Not sent: wait for fresh available quota, or check whether this cycle already succeeded. · {0}",
-  "上次处理：所选模型不可用，请在 Codex 中选择可用模型后重试 · {0}": "Last run: the selected model is unavailable; choose an available model in Codex and retry · {0}",
+  "上次处理：hi 所选模型不可用，请检查自动 hi 模型设置后重试 · {0}": "Last run: the selected hi model is unavailable; check the automatic hi model setting and retry · {0}",
   "未发送：无法读取 Codex 模型设置，请先确认 Codex 能正常启动 · {0}": "Not sent: unable to read Codex model settings; first check that Codex starts normally · {0}",
   "上次处理：发送失败，可手动重试 · {0}": "Last run: sending failed; a manual retry is available · {0}",
   "每分钟检查额度；明确的网络或额度错误会自动补发。剩余恢复 100% 时仅发送一次。": "Quota is checked every minute. Explicit network or quota failures are retried automatically. One hi is sent when remaining quota returns to 100%.",
@@ -528,5 +528,8 @@
   "内圈显示剩余额度": "Show remaining quota in the inner ring",
   "开启显示剩余，关闭显示已用；只影响第二条内圈。": "On shows remaining quota; off shows used quota. This affects only the secondary inner ring.",
   "收起条显示额度进度": "Show quota progress in the collapsed strip",
-  "进度长度跟随“显示剩余额度”；颜色沿用额度配色。关闭后恢复纯色收起条。": "The fill follows “Show remaining quota” and uses your quota colors. Turn this off to restore the solid collapsed strip."
+  "进度长度跟随“显示剩余额度”；颜色沿用额度配色。关闭后恢复纯色收起条。": "The fill follows “Show remaining quota” and uses your quota colors. Turn this off to restore the solid collapsed strip.",
+  "自动 hi 使用的模型（留空跟随 Codex）": "Model for automatic hi (blank follows Codex)",
+  "请输入有效模型名称（例如 gpt-6.1-terra），或留空跟随 Codex。": "Enter a valid model name (for example, gpt-6.1-terra), or leave blank to follow Codex.",
+  "只用于自动发送和手动补发 hi，不改变 Codex 聊天模型。": "Used only for automatic and manual hi sends. Does not change the Codex chat model."
 }

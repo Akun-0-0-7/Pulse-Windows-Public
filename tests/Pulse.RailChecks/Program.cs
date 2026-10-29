@@ -91,6 +91,7 @@ internal static partial class Program
             foreach(var key in starterEnvironment.Keys)Environment.SetEnvironmentVariable(key,null);
             SetField(app,"windowStarterAuthReader",(Func<string,string?>)(_=>"{\"accountId\":\"rail-fixture-account\",\"accessToken\":\"fixture-token\"}"));
             FiveHourWindowStarterLabels(app,settings,account);
+            WindowStarterModelSettingsChecks(app,settings,account);
             ShortRefreshChecks(app,settings);
             settings.Close();
             WindowStarterClaimChecks(app,account);
@@ -189,6 +190,43 @@ internal static partial class Program
         finally{app.Secrets.Set(account.Id,null);app.Secrets.Set("desktop:"+account.Id,null);account.Extra.Remove("isAdditionalAccount");account.ProviderId=providerId;settings.Navigate("account:"+account.Id);}
     }
     private static bool HasWindowStarterCheck(SettingsWindow settings)=>Descendants((DependencyObject)settings.Content).OfType<CheckBox>().Any(c=>Equals(c.Content,"5 小时重置后发送一次 hi 并刷新额度"));
+    private static void WindowStarterModelSettingsChecks(PulseApp app,SettingsWindow settings,AccountConfig account)
+    {
+        var providerId=account.ProviderId;
+        var hadModel=account.Extra.TryGetValue("windowStarterModel",out var oldModel);
+        var language=Pulse.Desktop.Localization.Language;
+        try
+        {
+            Pulse.Desktop.Localization.Language="zh-CN";account.ProviderId="codex";
+            account.Extra.Remove("windowStarterModel");app.Save();settings.Navigate("account:"+account.Id);
+            TextBox Input()=>Descendants((DependencyObject)settings.Content).OfType<TextBox>().Single(box=>Equals(box.Tag,"window-starter-model"));
+            Button Apply()=>Descendants((DependencyObject)settings.Content).OfType<Button>().Single(button=>Equals(button.Tag,"window-starter-model-apply"));
+            TextBlock Status()=>Descendants((DependencyObject)settings.Content).OfType<TextBlock>().Single(block=>Equals(block.Tag,"window-starter-model-status"));
+            string? Saved()=>app.Storage.LoadConfig().Accounts.Single(a=>a.Id==account.Id).Extra.GetValueOrDefault("windowStarterModel");
+            if(!Descendants((DependencyObject)settings.Content).OfType<TextBlock>().Any(block=>block.Text=="只用于自动发送和手动补发 hi，不改变 Codex 聊天模型。"))throw new Exception("Starter model help omits its limited scope.");
+            Input().Text="  gpt-6.1-terra  ";
+            if(account.Extra.ContainsKey("windowStarterModel")||Saved() is not null)throw new Exception("Typing a model saved an uncommitted value.");
+            Apply().RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            if(account.Extra.GetValueOrDefault("windowStarterModel")!="gpt-6.1-terra"||Saved()!="gpt-6.1-terra"||Input().Text!="gpt-6.1-terra")throw new Exception("Applying a starter model did not trim and persist it.");
+            settings.Navigate("network");settings.Navigate("account:"+account.Id);
+            if(Input().Text!="gpt-6.1-terra")throw new Exception("Reopening account settings lost the dedicated starter model.");
+            foreach(var invalid in new[]{"--model","gpt 6.1 terra",new string('a',129)})
+            {
+                Input().Text=invalid;Apply().RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                if(Saved()!="gpt-6.1-terra"||account.Extra.GetValueOrDefault("windowStarterModel")!="gpt-6.1-terra"||string.IsNullOrWhiteSpace(Status().Text))throw new Exception("Invalid starter model changed the saved choice or lacked an explanation.");
+            }
+            Input().Text="   ";Apply().RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            if(account.Extra.ContainsKey("windowStarterModel")||Saved() is not null||Input().Text!=""||Status().Text!="")throw new Exception("Clearing the starter model did not restore follow-Codex mode.");
+            account.ProviderId="unknown-offline-fixture";settings.Navigate("account:"+account.Id);
+            if(Descendants((DependencyObject)settings.Content).OfType<TextBox>().Any(box=>Equals(box.Tag,"window-starter-model")))throw new Exception("Non-Codex account exposed the Codex starter model.");
+            Console.WriteLine("PASS: dedicated hi model commits, persists, rejects invalid names and clears to follow Codex.");
+        }
+        finally
+        {
+            if(hadModel)account.Extra["windowStarterModel"]=oldModel!;else account.Extra.Remove("windowStarterModel");
+            account.ProviderId=providerId;Pulse.Desktop.Localization.Language=language;app.Save();settings.Navigate("account:"+account.Id);
+        }
+    }
     private static void ShortRefreshChecks(PulseApp app,SettingsWindow settings)
     {
         var originalCulture=System.Globalization.CultureInfo.CurrentCulture;
@@ -365,7 +403,7 @@ internal static partial class Program
             Invoke(app,"SetWindowStarterReport",job,"model",new WindowStarterReceipt("failed",false,null,null,"model"),rejected);
             var rejectionStatus=app.WindowStarterStatus(account.Id);
             if(!rejectionStatus.Contains("所选模型不可用",StringComparison.Ordinal)||
-                !rejectionStatus.Contains("在 Codex 中选择可用模型",StringComparison.Ordinal)||
+                !rejectionStatus.Contains("检查自动 hi 模型设置",StringComparison.Ordinal)||
                 !rejectionStatus.Contains(process.Model!,StringComparison.Ordinal)||rejectionStatus.StartsWith("未发送：",StringComparison.Ordinal))
                 throw new Exception("Model rejection was not distinguished from a preflight failure.");
 

@@ -101,6 +101,7 @@ public sealed partial class SettingsWindow : Window
             page.Children.Add(Ui.Check("5 小时重置后发送一次 hi 并刷新额度",account.Extra.GetValueOrDefault("windowStarter")=="true",value=>{if(value&&MessageBox.Show("开启后，Pulse 会在 5 小时额度重置时通过本机工具发送一次 hi，并立即刷新额度。该请求会使用账号额度。是否启用？","窗口启动器",MessageBoxButton.YesNo)!=MessageBoxResult.Yes){Navigate(current);return;}account.Extra["windowStarter"]=value?"true":"false";app.Engine.Config.WindowStarterEnabled=app.Engine.Config.Accounts.Any(a=>a.Extra.GetValueOrDefault("windowStarter")=="true");app.Save();}));
             page.Children.Add(Ui.Label("仅处理 5 小时额度；每周重置不另发消息。",12,Ui.Muted));
             page.Children.Add(Ui.Label("每分钟检查额度；明确的网络或额度错误会自动补发。剩余恢复 100% 时仅发送一次。",12,Ui.Muted));
+            if(account.ProviderId=="codex")WindowStarterModel(account);
             windowStarterStatus=Ui.Label(app.WindowStarterStatus(id),12,Ui.Muted);page.Children.Add(windowStarterStatus);
             windowStarterRetryButton=Ui.Button("再次发送 hi 并刷新额度",()=>_=app.RetryWindowStarterAsync(id));
             windowStarterRetryButton.IsEnabled=app.CanRetryWindowStarter(id);page.Children.Add(windowStarterRetryButton);
