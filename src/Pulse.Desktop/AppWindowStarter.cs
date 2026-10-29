@@ -124,7 +124,7 @@ public sealed partial class PulseApp
             "auth"=>"上次处理：登录已失效，请重新登录 · {0}",
             "turnIncomplete"=>"上次处理：未确认请求完成，请先查看额度，可手动重试 · {0}",
             "notReady"=>"未发送：请等待最新可用额度，或确认本轮是否已成功。 · {0}",
-            "model"=>"上次处理：所选模型不可用，请在 Codex 中选择可用模型后重试 · {0}",
+            "model"=>"上次处理：hi 所选模型不可用，请检查自动 hi 模型设置后重试 · {0}",
             "modelSelection"=>"未发送：无法读取 Codex 模型设置，请先确认 Codex 能正常启动 · {0}",
             _=>"上次处理：发送失败，可手动重试 · {0}"
         };
@@ -234,7 +234,7 @@ public sealed partial class PulseApp
             if(current is null||current.ProviderId!=job.ProviderId||!CanStartWindow(current)||CredentialVersion(current.Id)!=version)
                 throw new WindowStarterAccountChangedException();
             result=windowStarterSend is {} send?await send(current,Engine.LifetimeToken):
-                await WindowStarter.StartAsync(current.ProviderId,Storage.Root,Engine.LifetimeToken,current.Extra.GetValueOrDefault("executable"),ProxyEnvironment.ForTool(Engine.Config));
+                await WindowStarter.StartAsync(current.ProviderId,Storage.Root,Engine.LifetimeToken,current.Extra.GetValueOrDefault("executable"),ProxyEnvironment.ForTool(Engine.Config),configuredModel:current.Extra.GetValueOrDefault("windowStarterModel"));
             receipt=WindowStarter.Evaluate(job.ProviderId,result);
         }
         catch(WindowStarterAccountChangedException){receipt=new("failed",false,null,null,"cancelled");}

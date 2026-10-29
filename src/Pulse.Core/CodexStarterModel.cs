@@ -8,7 +8,7 @@ public sealed record CodexStarterModel(string Model,string Source)
     // Read settings without starting a thread. A configured model may be newer than
     // the CLI's bundled catalog, so that catalog must never veto the user's choice.
     public static async Task<CodexStarterModel?> ResolveAsync(string executable,string workingDirectory,
-        CancellationToken cancellationToken=default,Dictionary<string,string>? environment=null)
+        CancellationToken cancellationToken=default,Dictionary<string,string>? environment=null,string? configuredModel=null)
     {
         cancellationToken.ThrowIfCancellationRequested();
         using var deadline=CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -24,6 +24,11 @@ public sealed record CodexStarterModel(string Model,string Source)
             // Importing only a model name from another provider would silently change its route.
             if(config.TryGetProperty("model_provider",out var provider)&&provider.ValueKind!=JsonValueKind.Null&&
                 (provider.ValueKind!=JsonValueKind.String||provider.GetString()!="openai"))return null;
+            if(!string.IsNullOrWhiteSpace(configuredModel))
+            {
+                var preference=configuredModel.Trim();
+                return IsValidName(preference)?new(preference,"pulseSetting"):null;
+            }
             if(config.TryGetProperty("model",out var selected)&&selected.ValueKind!=JsonValueKind.Null)
                 return ValidModel(selected)?new(selected.GetString()!,"codexConfig"):null;
 
@@ -49,6 +54,8 @@ public sealed record CodexStarterModel(string Model,string Source)
         {cancellationToken.ThrowIfCancellationRequested();return null;}
     }
 
-    private static bool ValidModel(JsonElement value)=>value.ValueKind==JsonValueKind.String&&
-        Regex.IsMatch(value.GetString()!,"\\A[A-Za-z0-9][A-Za-z0-9._-]{0,127}\\z",RegexOptions.CultureInvariant);
+    public static bool IsValidName(string? name)=>name is not null&&
+        Regex.IsMatch(name,"\\A[A-Za-z0-9][A-Za-z0-9._-]{0,127}\\z",RegexOptions.CultureInvariant);
+
+    private static bool ValidModel(JsonElement value)=>value.ValueKind==JsonValueKind.String&&IsValidName(value.GetString());
 }

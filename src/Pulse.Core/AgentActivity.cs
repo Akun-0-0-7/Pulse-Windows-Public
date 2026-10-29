@@ -41,13 +41,13 @@ public sealed class BurnForecast
 public static partial class WindowStarter
 {
     public static bool IsDue(DateTimeOffset reset,DateTimeOffset now,int startHour,int endHour)=>now>=reset&&(startHour==endHour||startHour<endHour&&now.Hour>=startHour&&now.Hour<endHour||startHour>endHour&&(now.Hour>=startHour||now.Hour<endHour));
-    public static async Task<ProcessResult> StartAsync(string provider,string dataRoot,CancellationToken cancellationToken=default,string? configuredExecutable=null,Dictionary<string,string>? environment=null)
+    public static async Task<ProcessResult> StartAsync(string provider,string dataRoot,CancellationToken cancellationToken=default,string? configuredExecutable=null,Dictionary<string,string>? environment=null,string? configuredModel=null)
     {
         var name=provider=="codex"?"codex":"claude";
         var executable=provider=="codex"?CodexToolLocator.Find(configuredExecutable,environment):
             string.IsNullOrWhiteSpace(configuredExecutable)?LocalPaths.FindExecutable(name):LocalPaths.FindExecutable(configuredExecutable)??LocalPaths.FindExecutable(name);
         if(executable is null)return new(-1,"","toolMissing",false);var folder=Path.Combine(dataRoot,"window-starter");Directory.CreateDirectory(folder);
-        var model=provider=="codex"?await CodexStarterModel.ResolveAsync(executable,folder,cancellationToken,environment):null;
+        var model=provider=="codex"?await CodexStarterModel.ResolveAsync(executable,folder,cancellationToken,environment,configuredModel):null;
         if(provider=="codex"&&model is null)return new(-1,"","modelSelectionUnavailable",false);
         string[] args=provider=="codex"?["exec","--model",model!.Model,"--ignore-user-config","--json","--ephemeral","--skip-git-repo-check","-s","read-only","-C",folder,"hi"]:["-p","hi","--model","haiku","--no-session-persistence","--tools","","--strict-mcp-config","--setting-sources","project"];
         cancellationToken.ThrowIfCancellationRequested();

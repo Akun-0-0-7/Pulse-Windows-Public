@@ -23,7 +23,7 @@ public static class WindowStarterModelTests
             };
             if(models is not null)Environment["PULSE_TEST_STARTER_MODELS"]=models;
         }
-        public Task<ProcessResult> Start(CancellationToken ct=default)=>WindowStarter.StartAsync("codex",Root,ct,Path.Combine(AppContext.BaseDirectory,"Pulse.Tests.exe"),Environment);
+        public Task<ProcessResult> Start(CancellationToken ct=default,string? model=null)=>WindowStarter.StartAsync("codex",Root,ct,Path.Combine(AppContext.BaseDirectory,"Pulse.Tests.exe"),Environment,configuredModel:model);
         public string[] Methods()=>File.Exists(Calls)?File.ReadAllLines(Calls):[];
         public void Dispose()=>Directory.Delete(Root,true);
     }
@@ -43,6 +43,49 @@ public static class WindowStarterModelTests
         Assert.True(!result.Output.Contains("SECRET-fixture"));
         Assert.Equal("config/read,exec",string.Join(',',fixture.Methods()));
         Assert.Equal(Path.Combine(fixture.Root,"window-starter"),doc.RootElement.GetProperty("cwd").GetString());
+    }
+
+    [Check] public static async Task StarterPreferenceOverridesChatModelWithoutCatalogFallback()
+    {
+        using var fixture=new Fixture("""{"config":{"model":"gpt-6-astra","model_provider":"openai"}}""",
+            """{"data":[{"model":"gpt-6-astra","isDefault":true}],"nextCursor":null}""");
+        var result=await fixture.Start(model:" gpt-6.1-terra ");
+        Assert.Equal(0,result.ExitCode);Assert.Equal("gpt-6.1-terra",result.Model);Assert.Equal("pulseSetting",result.ModelSource);
+        using var doc=JsonDocument.Parse(result.Output);
+        var args=doc.RootElement.GetProperty("args").EnumerateArray().Select(x=>x.GetString()).ToArray();
+        Assert.Equal("gpt-6.1-terra",args[Array.IndexOf(args,"--model")+1]);
+        Assert.True(args.Contains("--ignore-user-config"));
+        Assert.Equal("config/read,exec",string.Join(',',fixture.Methods()));
+    }
+
+    [Check] public static async Task BlankStarterPreferenceFollowsChatConfiguration()
+    {
+        using var fixture=new Fixture("""{"config":{"model":"fixture-chat-model"}}""");
+        var result=await fixture.Start(model:" \t ");
+        Assert.Equal("fixture-chat-model",result.Model);Assert.Equal("codexConfig",result.ModelSource);
+        Assert.Equal("config/read,exec",string.Join(',',fixture.Methods()));
+    }
+
+    [Check] public static async Task InvalidStarterPreferenceNeverFallsBackToChatModel()
+    {
+        foreach(var model in new[]{"--bad","model name","gpt-6.1-terra\n--other",new string('a',129)})
+        {
+            using var fixture=new Fixture("""{"config":{"model":"gpt-6-astra"}}""");
+            var result=await fixture.Start(model:model);
+            Assert.Equal("modelSelection",WindowStarter.Evaluate("codex",result).FailureKind);
+            Assert.True(!fixture.Methods().Contains("exec"),"Invalid preference silently used another model");
+        }
+    }
+
+    [Check] public static async Task StarterPreferenceDoesNotBypassProviderOrConfigReadChecks()
+    {
+        foreach(var config in new[]{"RPC_ERROR","{}","""{"config":{"model_provider":"third-party"}}"""})
+        {
+            using var fixture=new Fixture(config);
+            var result=await fixture.Start(model:"gpt-6.1-terra");
+            Assert.Equal("modelSelection",WindowStarter.Evaluate("codex",result).FailureKind);
+            Assert.True(!fixture.Methods().Contains("exec"));
+        }
     }
 
     [Check] public static async Task UnsetModelUsesVisibleCatalogDefaultBeforeOneSend()
