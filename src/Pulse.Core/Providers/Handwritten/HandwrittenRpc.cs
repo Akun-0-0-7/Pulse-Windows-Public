@@ -8,12 +8,13 @@ namespace Pulse.Core;
 public static class HandwrittenRpc
 {
     public static Task<string> ReadAsync(string executable,IEnumerable<string> arguments,bool kiro,CancellationToken cancellationToken=default,TimeSpan? timeout=null,Dictionary<string,string>? environment=null)=>InvokeAsync(executable,arguments,kiro?"_kiro/account/getUsage":"account/rateLimits/read",kiro,cancellationToken,timeout,environment);
-    public static async Task<string> InvokeAsync(string executable,IEnumerable<string> arguments,string method,bool kiro=false,CancellationToken cancellationToken=default,TimeSpan? timeout=null,Dictionary<string,string>? environment=null)
+    public static async Task<string> InvokeAsync(string executable,IEnumerable<string> arguments,string method,bool kiro=false,CancellationToken cancellationToken=default,TimeSpan? timeout=null,Dictionary<string,string>? environment=null,object? parameters=null,string? workingDirectory=null)
     {
         using var deadline=CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);deadline.CancelAfter(timeout??TimeSpan.FromSeconds(20));var ct=deadline.Token;
         using var child=new Process { StartInfo=WindowsCommand.StartInfo(executable,arguments) };
+        if(workingDirectory is not null)child.StartInfo.WorkingDirectory=workingDirectory;
         if(environment is not null){child.StartInfo.Environment.Clear();foreach(var pair in environment)child.StartInfo.Environment[pair.Key]=pair.Value;}
-        child.StartInfo.Environment["PATH"]=Path.GetDirectoryName(executable)+Path.PathSeparator+Environment.GetEnvironmentVariable("PATH");
+        if(environment is null)child.StartInfo.Environment["PATH"]=Path.GetDirectoryName(executable)+Path.PathSeparator+Environment.GetEnvironmentVariable("PATH");
         if(!child.Start())throw new InvalidOperationException("Could not start quota helper");
         using var lease=ChildProcesses.Track(child);
         var budget=new OutputBudget(deadline);
@@ -23,7 +24,7 @@ public static class HandwrittenRpc
             await Send(1,"initialize",kiro?new {protocolVersion=1,clientCapabilities=new{},clientInfo=new{name="PulseWindows",version="0.1"}}:(object)new{clientInfo=new{name="PulseWindows",title="Pulse",version="0.1"}});
             _=await Reply(1);
             if(!kiro)await child.StandardInput.WriteLineAsync("{\"jsonrpc\":\"2.0\",\"method\":\"initialized\"}".AsMemory(),ct);
-            await Send(2,method,new{});
+            await Send(2,method,parameters??new{});
             return await Reply(2);
         } finally {
             deadline.Cancel();try {if(!child.HasExited)child.Kill(true);}catch(InvalidOperationException){}

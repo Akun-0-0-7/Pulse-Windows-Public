@@ -44,9 +44,14 @@ public static partial class WindowStarter
     public static async Task<ProcessResult> StartAsync(string provider,string dataRoot,CancellationToken cancellationToken=default,string? configuredExecutable=null,Dictionary<string,string>? environment=null)
     {
         var name=provider=="codex"?"codex":"claude";
-        var executable=string.IsNullOrWhiteSpace(configuredExecutable)?LocalPaths.FindExecutable(name):LocalPaths.FindExecutable(configuredExecutable)??LocalPaths.FindExecutable(name);
+        var executable=provider=="codex"?CodexToolLocator.Find(configuredExecutable,environment):
+            string.IsNullOrWhiteSpace(configuredExecutable)?LocalPaths.FindExecutable(name):LocalPaths.FindExecutable(configuredExecutable)??LocalPaths.FindExecutable(name);
         if(executable is null)return new(-1,"","toolMissing",false);var folder=Path.Combine(dataRoot,"window-starter");Directory.CreateDirectory(folder);
-        string[] args=provider=="codex"?["exec","--ignore-user-config","--json","--ephemeral","--skip-git-repo-check","-s","read-only","-C",folder,"-c","model_reasoning_effort=\"low\"","hi"]:["-p","hi","--model","haiku","--no-session-persistence","--tools","","--strict-mcp-config","--setting-sources","project"];
-        return await ProcessRunner.RunAsync(executable,args,TimeSpan.FromSeconds(120),cancellationToken,folder,environment);
+        var model=provider=="codex"?await CodexStarterModel.ResolveAsync(executable,folder,cancellationToken,environment):null;
+        if(provider=="codex"&&model is null)return new(-1,"","modelSelectionUnavailable",false);
+        string[] args=provider=="codex"?["exec","--model",model!.Model,"--ignore-user-config","--json","--ephemeral","--skip-git-repo-check","-s","read-only","-C",folder,"hi"]:["-p","hi","--model","haiku","--no-session-persistence","--tools","","--strict-mcp-config","--setting-sources","project"];
+        cancellationToken.ThrowIfCancellationRequested();
+        var result=await ProcessRunner.RunAsync(executable,args,TimeSpan.FromSeconds(120),cancellationToken,folder,environment);
+        return result with{Model=model?.Model,ModelSource=model?.Source};
     }
 }
