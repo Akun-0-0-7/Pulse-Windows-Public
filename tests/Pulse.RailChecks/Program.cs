@@ -327,7 +327,8 @@ internal static partial class Program
             account.ProviderId="codex";account.Enabled=true;account.Extra["windowStarter"]="true";config.WindowStarterEnabled=true;
             SetField(app,"windowStarterReports",new Dictionary<string,PulseApp.WindowStarterReport>());
             var job=new WindowResetJob(account.Id,"codex",DateTimeOffset.UtcNow);
-            var process=new ProcessResult(0,"SECRET-fixture-stdout","SECRET-fixture-stderr",false);
+            var process=new ProcessResult(0,"SECRET-fixture-stdout","SECRET-fixture-stderr",false)
+                {Model="fixture-configured-model",ModelSource="codexConfig"};
             Invoke(app,"SetWindowStarterReport",job,"success",new WindowStarterReceipt("success",true,123,5,null),process);
             var successText=File.ReadAllText(path);
             if(successText.Contains("SECRET-fixture",StringComparison.Ordinal))throw new Exception("Raw process output entered window starter report.");
@@ -340,7 +341,13 @@ internal static partial class Program
                 var observed=app.Engine.Reading(account.Id)?.ObservedAt;
                 if(observed is not null&&report.GetProperty("quotaObservedAt").GetDateTimeOffset()!=observed)
                     throw new Exception("Saved quota observation time differs from the synthetic reading.");
+                if(report.GetProperty("model").GetString()!=process.Model||report.GetProperty("modelSource").GetString()!=process.ModelSource)
+                    throw new Exception("Selected model metadata was not persisted with the receipt.");
             }
+            var successStatus=app.WindowStarterStatus(account.Id);
+            if(!successStatus.Contains("已发送 hi",StringComparison.Ordinal)||
+                !successStatus.EndsWith("\n"+Pulse.Desktop.Localization.Format("模型：{0}",process.Model!),StringComparison.Ordinal))
+                throw new Exception("Completed send did not display the selected model on its own line.");
             Invoke(app,"SetWindowStarterReport",job,"turnIncomplete",new WindowStarterReceipt("failed",false,null,null,"turnIncomplete"),process);
             var incompleteText=File.ReadAllText(path);
             if(incompleteText.Contains("SECRET-fixture",StringComparison.Ordinal))throw new Exception("Raw failed process output entered window starter report.");
@@ -353,6 +360,33 @@ internal static partial class Program
             }
             if(!app.WindowStarterStatus(account.Id).Contains("未确认请求完成",StringComparison.Ordinal))
                 throw new Exception("Incomplete Codex turn was displayed as a completed send.");
+
+            var rejected=process with{ExitCode=1};
+            Invoke(app,"SetWindowStarterReport",job,"model",new WindowStarterReceipt("failed",false,null,null,"model"),rejected);
+            var rejectionStatus=app.WindowStarterStatus(account.Id);
+            if(!rejectionStatus.Contains("所选模型不可用",StringComparison.Ordinal)||
+                !rejectionStatus.Contains("在 Codex 中选择可用模型",StringComparison.Ordinal)||
+                !rejectionStatus.Contains(process.Model!,StringComparison.Ordinal)||rejectionStatus.StartsWith("未发送：",StringComparison.Ordinal))
+                throw new Exception("Model rejection was not distinguished from a preflight failure.");
+
+            var unavailable=new ProcessResult(-1,"","modelSelectionUnavailable",false);
+            Invoke(app,"SetWindowStarterReport",job,"modelSelection",new WindowStarterReceipt("failed",false,null,null,"modelSelection"),unavailable);
+            var selectionStatus=app.WindowStarterStatus(account.Id);
+            if(!selectionStatus.StartsWith("未发送：无法读取 Codex 模型设置",StringComparison.Ordinal)||
+                selectionStatus.Contains("已发送",StringComparison.Ordinal)||selectionStatus.Contains(process.Model!,StringComparison.Ordinal))
+                throw new Exception("Preflight model selection failure did not clearly report no message was sent.");
+            var selectionText=File.ReadAllText(path);
+            if(selectionText.Contains("SECRET-fixture",StringComparison.Ordinal)||selectionText.Contains(process.Model!,StringComparison.Ordinal))
+                throw new Exception("Preflight failure retained process output or a previous attempt's selected model.");
+            using(var document=System.Text.Json.JsonDocument.Parse(selectionText))
+            {
+                var report=document.RootElement.GetProperty(account.Id);
+                if(report.GetProperty("completed").GetBoolean()||report.GetProperty("status").GetString()!="modelSelection"||
+                    report.GetProperty("failureKind").GetString()!="modelSelection"||report.GetProperty("exitCode").GetInt32()!=-1||
+                    report.TryGetProperty("model",out var model)&&model.ValueKind!=System.Text.Json.JsonValueKind.Null||
+                    report.TryGetProperty("modelSource",out var source)&&source.ValueKind!=System.Text.Json.JsonValueKind.Null)
+                    throw new Exception("Preflight failure metadata did not preserve its no-send state.");
+            }
         }
         finally
         {

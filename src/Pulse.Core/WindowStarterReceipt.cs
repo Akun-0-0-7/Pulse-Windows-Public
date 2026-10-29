@@ -11,6 +11,7 @@ public static partial class WindowStarter
     {
         if(result.TimedOut)return Failure("timeout");
         if(string.Equals(result.Error,"toolMissing",StringComparison.Ordinal))return Failure("toolMissing");
+        if(string.Equals(result.Error,"modelSelectionUnavailable",StringComparison.Ordinal))return Failure("modelSelection");
         if(provider!="codex")return result.ExitCode==0?new("success",true,null,null,null):
             Failure(string.IsNullOrWhiteSpace(result.Output)?FailureKind(result.Error):"turnIncomplete");
 

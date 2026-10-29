@@ -17,7 +17,11 @@ public static class LocalPaths
         var local=Path.Combine(Home,".claude","local",name+".exe");return File.Exists(local)?local:null;
     }
 }
-public sealed record ProcessResult(int ExitCode,string Output,string Error,bool TimedOut);
+public sealed record ProcessResult(int ExitCode,string Output,string Error,bool TimedOut)
+{
+    public string? Model {get;init;}
+    public string? ModelSource {get;init;}
+}
 public static class ProcessRunner
 {
     public static async Task<ProcessResult> RunAsync(string file,IEnumerable<string> arguments,TimeSpan? timeout=null,CancellationToken cancellationToken=default,string? workingDirectory=null,Dictionary<string,string>? environment=null,int maxOutputBytes=262144)

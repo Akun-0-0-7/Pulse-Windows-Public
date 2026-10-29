@@ -4,14 +4,14 @@
 
 在 Windows 桌面浮动栏和系统托盘查看 AI 服务额度。基于 [qunqin24/Pulse](https://github.com/qunqin24/Pulse) 移植，支持 Windows 11、Windows 10 企业版长期服务版（LTSC）21H2 的 64 位 Intel/AMD 电脑。
 
-当前公开版本：[**0.1.6**](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/tag/v0.1.6)。
+当前公开版本：[**0.1.7**](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/tag/v0.1.7)。
 
-0.1.6 汇总此前预览版的悬浮条动效、可调配色、设置控件可读性、Token 目录选择、hi 失败恢复和更新器修复。贴边收起条可显示当前额度进度，内圈可独立切换剩余或已用额度；Codex 升级后保存的旧工具路径失效时，会重新查找当前工具。源码已整合到 `main`，正式运行包和源码包见上方版本页。更新渠道及发布步骤见[更新说明](Docs/updates.md)。
+0.1.7 修复自动 hi 错选旧 Codex 工具和丢失模型选择的问题：自动查找优先使用当前桌面运行组件，发送前读取所选模型并明确传入，预检失败不发送。执行状态会显示实际模型。保留 0.1.6 的动效、配色、Token 目录、贴边进度条和内圈剩余/已用开关。源码同步到 `main`，正式运行包和源码包见上方版本页。更新渠道及发布步骤见[更新说明](Docs/updates.md)。
 
 ## 下载与使用
 
 1. 打开 [版本下载页](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/latest)。
-2. 下载 `Pulse-Windows-Public-0.1.6-win-x64.zip`，完整解压。
+2. 下载 `Pulse-Windows-Public-0.1.7-win-x64.zip`，完整解压。
 3. 双击 `Pulse.exe`，或运行 `安装到当前用户.cmd` 创建开始菜单入口。
 4. 在欢迎页选择需要监控的服务，点击“开始监控”，再使用自己的账号登录。
 
@@ -29,6 +29,6 @@
 - [程序文件职责](Docs/file-guide.zh-CN.md)：源码各部分的用途。
 - [功能对应关系](Docs/parity.md)与[验证记录](Docs/verification.md)。
 
-`win-x64.zip` 是可直接运行的程序；`Pulse-Windows-Public-0.1.6-source.zip` 是对应版本的源码和文档。附带的 `.sha256` 文件保存 SHA-256 校验值，SHA-256 是用于核对文件完整性的摘要算法。
+`win-x64.zip` 是可直接运行的程序；`Pulse-Windows-Public-0.1.7-source.zip` 是对应版本的源码和文档。附带的 `.sha256` 文件保存 SHA-256 校验值，SHA-256 是用于核对文件完整性的摘要算法。
 
 源码使用 [Apache-2.0](LICENSE) 许可，原作者及第三方组件说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

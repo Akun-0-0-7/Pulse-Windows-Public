@@ -87,7 +87,8 @@ public sealed partial class PulseApp
     {
         windowStarterReports[job.AccountId]=new(){ProviderId=job.ProviderId,ResetAt=job.ResetAt,At=windowStarterNow(),Status=status,
             Completed=receipt?.Completed,InputTokens=receipt?.InputTokens,OutputTokens=receipt?.OutputTokens,FailureKind=receipt?.FailureKind,
-            ExitCode=process?.ExitCode,TimedOut=process?.TimedOut,QuotaObservedAt=Engine.Reading(job.AccountId)?.ObservedAt};
+            ExitCode=process?.ExitCode,TimedOut=process?.TimedOut,QuotaObservedAt=Engine.Reading(job.AccountId)?.ObservedAt,
+            Model=process?.Model,ModelSource=process?.ModelSource};
         try{Storage.Save("window-starter-last.json",windowStarterReports);}
         catch(Exception exception)when(exception is IOException or UnauthorizedAccessException){}
         if(!exiting)settings?.UpdateReadings();
@@ -123,10 +124,12 @@ public sealed partial class PulseApp
             "auth"=>"上次处理：登录已失效，请重新登录 · {0}",
             "turnIncomplete"=>"上次处理：未确认请求完成，请先查看额度，可手动重试 · {0}",
             "notReady"=>"未发送：请等待最新可用额度，或确认本轮是否已成功。 · {0}",
-            "model"=>"上次处理：工具模型配置不可用，请检查工具版本后重试 · {0}",
+            "model"=>"上次处理：所选模型不可用，请在 Codex 中选择可用模型后重试 · {0}",
+            "modelSelection"=>"未发送：无法读取 Codex 模型设置，请先确认 Codex 能正常启动 · {0}",
             _=>"上次处理：发送失败，可手动重试 · {0}"
         };
-        return Localization.Format(text,report.At.ToString("MM-dd HH:mm:ss"));
+        var status=Localization.Format(text,report.At.ToString("MM-dd HH:mm:ss"));
+        return string.IsNullOrWhiteSpace(report.Model)?status:status+"\n"+Localization.Format("模型：{0}",report.Model);
     }
 
     private async Task StartDueWindows()
@@ -254,7 +257,7 @@ public sealed partial class PulseApp
         }
         if(!exiting&&!Engine.LifetimeToken.IsCancellationRequested)await RefreshWindowStarterQuotaAsync(Engine.LifetimeToken);
         var status=receipt.Completed&&receipt.Status=="success"?"success":receipt.FailureKind switch
-        {"timeout"=>"timedOut","toolMissing"=>"toolMissing","auth"=>"auth","network"=>"network","turnIncomplete"=>"turnIncomplete","model"=>"model","cancelled"=>"cancelled","interrupted"=>"interrupted",_=>"failed"};
+        {"timeout"=>"timedOut","toolMissing"=>"toolMissing","auth"=>"auth","network"=>"network","turnIncomplete"=>"turnIncomplete","model"=>"model","modelSelection"=>"modelSelection","cancelled"=>"cancelled","interrupted"=>"interrupted",_=>"failed"};
         SetWindowStarterReport(job,status,receipt,result);
     }
 
@@ -272,5 +275,7 @@ public sealed partial class PulseApp
         public int? ExitCode {get;set;}
         public bool? TimedOut {get;set;}
         public DateTimeOffset? QuotaObservedAt {get;set;}
+        public string? Model {get;set;}
+        public string? ModelSource {get;set;}
     }
 }

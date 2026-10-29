@@ -1,12 +1,12 @@
 # Pulse Windows 使用说明
 
-Pulse Windows 在桌面悬浮栏和系统托盘中显示 AI 服务额度、余额和重置倒计时。公开版本为 **0.1.6**，基于 [qunqin24/Pulse](https://github.com/qunqin24/Pulse) 1.12.2 移植。
+Pulse Windows 在桌面悬浮栏和系统托盘中显示 AI 服务额度、余额和重置倒计时。公开版本为 **0.1.7**，基于 [qunqin24/Pulse](https://github.com/qunqin24/Pulse) 1.12.2 移植。
 
 支持 Windows 11、Windows 10 企业版长期服务版（LTSC）21H2 的 64 位 Intel/AMD 电脑。
 
 ## 安装与首次运行
 
-1. 从[版本下载页](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/latest)下载 `Pulse-Windows-Public-0.1.6-win-x64.zip`。
+1. 从[版本下载页](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/latest)下载 `Pulse-Windows-Public-0.1.7-win-x64.zip`。
 2. 完整解压，保留同目录的组件文件。
 3. 双击 `Pulse.exe` 即可运行。也可双击 `安装到当前用户.cmd`，安装到当前用户应用目录并创建开始菜单入口，无需管理员权限。
 4. 在欢迎页选择需要监控的服务，点击“开始监控”。也可点击“稍后设置”，之后到“服务与账号”添加。
@@ -65,7 +65,7 @@ https://raw.githubusercontent.com/Akun-0-0-7/Pulse-Windows-Public/main/updates.j
 
 点击“检查更新”后，程序读取该发布源。有较新版本时先下载并校验，再显示文件和安装信息；只有点击确认安装，才退出程序并替换文件。更新机制见[更新说明](Docs/updates.md)。
 
-0.1.5 和 0.1.6-preview.5 及更早版本的检查器不能正确处理部分版本与 GitHub 下载跳转，请先从 [0.1.6 版本页](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/tag/v0.1.6) 手动升级一次。preview.6 及更新版本可直接检查更新。预览渠道固定地址为 `https://raw.githubusercontent.com/Akun-0-0-7/Pulse-Windows-Public/main/updates-preview.json`；本次两个渠道都提供 0.1.6 正式版，后续体验版本只更新预览渠道。维护者按[发布步骤](Docs/updates.md#维护者发布步骤)先发布 ZIP，再提交对应清单。
+0.1.5 和 0.1.6-preview.5 及更早版本的检查器不能正确处理部分版本与 GitHub 下载跳转，请先从 [最新正式版本页](https://github.com/Akun-0-0-7/Pulse-Windows-Public/releases/latest) 手动升级一次。preview.6 及更新版本可直接检查更新。预览渠道固定地址为 `https://raw.githubusercontent.com/Akun-0-0-7/Pulse-Windows-Public/main/updates-preview.json`；本次两个渠道都提供 0.1.7 正式版，后续体验版本只更新预览渠道。维护者按[发布步骤](Docs/updates.md#维护者发布步骤)先发布 ZIP，再提交对应清单。
 
 卸载可运行安装目录内的 `uninstall.ps1`，个人设置和数据会保留。
 
@@ -80,7 +80,7 @@ https://raw.githubusercontent.com/Akun-0-0-7/Pulse-Windows-Public/main/updates.j
 | `usage-cache.json` | 上次读取的额度、来源和读取时间。 |
 | `usage-history.json` | 本机已观察到的额度趋势。 |
 | `window-starter-state.json` | 五小时重置计划和已认领周期，用于防止重复发送。 |
-| `window-starter-last.json` | 最近一次自动发送的状态、完成标记、退出码和用量计数；不含登录凭据。 |
+| `window-starter-last.json` | 最近一次自动发送的状态、完成标记、退出码、模型及来源和用量计数；不含登录凭据。 |
 | `window-starter/` | 本机工具发送消息时使用的独立工作目录。 |
 | `spend-cache.json`、`spend-file-cache-v1.json` | 消耗整理结果与文件解析缓存。 |
 | `browser-sessions/` | 主动连接服务时使用的独立网页登录环境。 |
@@ -90,7 +90,7 @@ https://raw.githubusercontent.com/Akun-0-0-7/Pulse-Windows-Public/main/updates.j
 
 ## 源码与构建
 
-`Pulse-Windows-Public-0.1.6-source.zip` 包含程序、离线检查和文档。源码构建需要 .NET 10 开发工具，在源码目录运行：
+`Pulse-Windows-Public-0.1.7-source.zip` 包含程序、离线检查和文档。源码构建需要 .NET 10 开发工具，在源码目录运行：
 
 ```powershell
 .\Scripts\build.ps1

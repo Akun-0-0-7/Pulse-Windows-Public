@@ -14,7 +14,37 @@ public static class Program
     {
         if(args is ["exec", ..]&&Environment.GetEnvironmentVariable("PULSE_TEST_WINDOW_STARTER_FIXTURE")=="true")
         {
+            if(Environment.GetEnvironmentVariable("PULSE_TEST_STARTER_CALLS") is {} calls)File.AppendAllText(calls,"exec\n");
             Console.Write(System.Text.Json.JsonSerializer.Serialize(new {cwd=Environment.CurrentDirectory,args}));
+            return 0;
+        }
+        if(args is ["app-server"]&&Environment.GetEnvironmentVariable("PULSE_TEST_WINDOW_STARTER_FIXTURE")=="true")
+        {
+            using var initialize=System.Text.Json.JsonDocument.Parse((await Console.In.ReadLineAsync())!);
+            if(initialize.RootElement.GetProperty("method").GetString()!="initialize")return 3;
+            Console.WriteLine("{\"id\":1,\"result\":{}}");
+            using var initialized=System.Text.Json.JsonDocument.Parse((await Console.In.ReadLineAsync())!);
+            if(initialized.RootElement.GetProperty("method").GetString()!="initialized")return 4;
+            using var read=System.Text.Json.JsonDocument.Parse((await Console.In.ReadLineAsync())!);
+            var method=read.RootElement.GetProperty("method").GetString();
+            if(Environment.GetEnvironmentVariable("PULSE_TEST_STARTER_CALLS") is {} calls)File.AppendAllText(calls,method+"\n");
+            if(method=="config/read")
+            {
+                if(read.RootElement.GetProperty("params").GetProperty("includeLayers").GetBoolean())return 6;
+                if(read.RootElement.GetProperty("params").GetProperty("cwd").GetString()!=Environment.CurrentDirectory)return 7;
+                if(Environment.GetEnvironmentVariable("PULSE_TEST_STARTER_EXPECTED_PATH") is {} expectedPath&&Environment.GetEnvironmentVariable("PATH")!=expectedPath)return 8;
+                if(Environment.GetEnvironmentVariable("PULSE_TEST_STARTER_EXPECTED_HOME") is {} expectedHome&&Environment.GetEnvironmentVariable("CODEX_HOME")!=expectedHome)return 9;
+                var result=Environment.GetEnvironmentVariable("PULSE_TEST_STARTER_CONFIG")??"{\"config\":{\"model\":\"fixture-configured\",\"model_provider\":null}}";
+                if(result=="RPC_ERROR")Console.WriteLine("{\"id\":2,\"error\":{\"message\":\"SECRET-fixture\"}}");
+                else Console.WriteLine("{\"id\":2,\"result\":"+result+"}");
+            }
+            else if(method=="model/list")
+            {
+                var cursor=read.RootElement.GetProperty("params").GetProperty("cursor");
+                var next=cursor.ValueKind==System.Text.Json.JsonValueKind.String?Environment.GetEnvironmentVariable("PULSE_TEST_STARTER_MODELS_NEXT"):null;
+                Console.WriteLine("{\"id\":2,\"result\":"+(next??Environment.GetEnvironmentVariable("PULSE_TEST_STARTER_MODELS")??"{\"data\":[{\"model\":\"fixture-default\",\"hidden\":false,\"isDefault\":true}],\"nextCursor\":null}")+"}");
+            }
+            else return 5;
             return 0;
         }
         if(args is ["app-server"]&&Environment.GetEnvironmentVariable("PULSE_TEST_CODEX_FIXTURE")=="true")
