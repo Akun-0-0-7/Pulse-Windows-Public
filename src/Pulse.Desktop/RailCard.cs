@@ -27,9 +27,11 @@ internal static class RailCard
                 row.Children.Add(new TextBlock{Text=window.Label??(window.Kind=="weekly"?Localization.Translate("每周限额"):Ui.WindowName(window)),FontSize=11.5*s,Foreground=white,Height=14*s,Margin=new Thickness(0,0,0,7*s)});
                 row.Children.Add(new Meter(window.UsedPercent,config,account.AccentColor,window.Exhausted,inSettings){Tag="quota-meter",Height=6*s,Margin=new Thickness(0,0,0,7*s)});
                 var known=double.IsFinite(window.UsedPercent)&&window.UsedPercent>=0;
+                var showRemaining=config.ShowRemaining&&known;
                 var footer=new WrapPanel();
-                var used=new TextBlock{Tag="quota-used",Text=known?Localization.Format("已用 {0}%",UsageFigures.Percent(window.UsedPercent)):Localization.Translate("额度未知"),Foreground=white,FontSize=11.5*s,Margin=new Thickness(0,0,12*s,0)};footer.Children.Add(used);
-                var remaining=new TextBlock{Tag="quota-remaining",Text=known?Localization.Format("剩余 {0}%",UsageFigures.Percent(window.Exhausted?100:window.UsedPercent,true)):"",Foreground=muted,FontSize=11.5*s};footer.Children.Add(remaining);
+                var used=new TextBlock{Tag="quota-used",Text=known?Localization.Format("已用 {0}%",UsageFigures.Percent(window.UsedPercent)):Localization.Translate("额度未知"),Foreground=showRemaining?muted:white,FontSize=11.5*s};
+                var remaining=new TextBlock{Tag="quota-remaining",Text=known?Localization.Format("剩余 {0}%",UsageFigures.Percent(window.Exhausted?100:window.UsedPercent,true)):"",Foreground=showRemaining?white:muted,FontSize=11.5*s};
+                var primary=showRemaining?remaining:used;primary.Margin=new Thickness(0,0,12*s,0);footer.Children.Add(primary);footer.Children.Add(showRemaining?used:remaining);
                 row.Children.Add(footer);
                 var reset=new TextBlock{Tag="quota-reset",Text=Reset(window.ResetsAt),Foreground=muted,FontSize=11.5*s,TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,3*s,0,0)};row.Children.Add(reset);
                 if(window.Estimated)row.Children.Add(Label("按所选基准估算",10,muted));
@@ -73,11 +75,11 @@ internal static class RailCard
             var track=RailColors.Track(config,true,inSettings);var bounds=new Rect(0,0,ActualWidth,ActualHeight);
             drawing.DrawRoundedRectangle(track,null,bounds,ActualHeight/2,ActualHeight/2);
             drawing.PushClip(new RectangleGeometry(bounds,ActualHeight/2,ActualHeight/2));
-            var value=double.IsFinite(percent)?Math.Clamp(percent,0,100)/100:0;
-            if(!config.SegmentedBars)drawing.DrawRectangle(color,null,new Rect(0,0,ActualWidth*value,ActualHeight));
+            var fillPercent=double.IsFinite(percent)&&percent>=0?Math.Clamp(config.ShowRemaining?(exhausted?0:100-percent):percent,0,100):0;
+            if(!config.SegmentedBars)drawing.DrawRectangle(color,null,new Rect(0,0,ActualWidth*fillPercent/100,ActualHeight));
             else
             {
-                var fractions=UsageBar.FillFractions(percent);var step=ActualWidth/fractions.Length;
+                var fractions=UsageBar.FillFractions(fillPercent);var step=ActualWidth/fractions.Length;
                 for(var i=0;i<fractions.Length;i++)drawing.DrawRectangle(color,null,new Rect(i*step,0,Math.Max(0,step-2)*fractions[i],ActualHeight));
             }
             drawing.Pop();
